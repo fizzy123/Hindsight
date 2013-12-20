@@ -3,9 +3,8 @@
 
     <string name="app_name">Hindsight</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
     <string name="title_item_list">Items</string>
     <string name="title_item_detail">Item Detail</string>
-    <string name="hindsight">Hindsight</string>
+    <string name="loading">Loading&#8230;</string>
 
 </resources>
