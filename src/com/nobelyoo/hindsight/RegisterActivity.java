@@ -13,7 +13,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
@@ -33,7 +32,7 @@ import android.widget.Toast;
  * Activity which displays a login screen to the user, offering registration as
  * well.
  */
-public class LoginActivity extends Activity {
+public class RegisterActivity extends Activity {
 
 	/**
 	 * The default email to populate the email field with.
@@ -47,11 +46,12 @@ public class LoginActivity extends Activity {
 
 	// Values for email and password at the time of the login attempt.
 	private String mEmail;
-	private String mPassword;
+	private String mPassword, mPasswordConfirm;
 
 	// UI references.
 	private EditText mEmailView;
 	private EditText mPasswordView;
+	private EditText mPasswordConfirmView;
 	private View mLoginFormView;
 	private View mLoginStatusView;
 	private TextView mLoginStatusMessageView;
@@ -60,7 +60,7 @@ public class LoginActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		setContentView(R.layout.activity_login);
+		setContentView(R.layout.activity_register);
 
 		// Set up the login form.
 		mEmail = getIntent().getStringExtra(EXTRA_EMAIL);
@@ -72,7 +72,19 @@ public class LoginActivity extends Activity {
 			@Override
 			public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
 				if (id == R.id.login || id == EditorInfo.IME_NULL) {
-					attemptLogin();
+					attemptRegister();
+					return true;
+				}
+				return false;
+			}
+		});
+
+		mPasswordConfirmView = (EditText) findViewById(R.id.passwordConfirm);
+		mPasswordConfirmView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+			@Override
+			public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+				if (id == R.id.login || id == EditorInfo.IME_NULL) {
+					attemptRegister();
 					return true;
 				}
 				return false;
@@ -83,31 +95,12 @@ public class LoginActivity extends Activity {
 		mLoginStatusView = findViewById(R.id.login_status);
 		mLoginStatusMessageView = (TextView) findViewById(R.id.login_status_message);
 
-		// The sign in button
 		findViewById(R.id.sign_in_button).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				attemptLogin();
+				attemptRegister();
 			}
 		});
-
-		// The register button
-		findViewById(R.id.register_button).setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				goRegister();
-			}
-		});
-
-	}
-
-	/*
-	 * Goes to the register screen
-	 */
-	private void goRegister() {
-		Intent intent = new Intent(getBaseContext(), RegisterActivity.class);
-		startActivity(intent);
-		finish();
 	}
 
 	@Override
@@ -118,11 +111,11 @@ public class LoginActivity extends Activity {
 	}
 
 	/**
-	 * Attempts to sign in or register the account specified by the login form.
+	 * Attempts to register the account specified by the register form.
 	 * If there are form errors (invalid email, missing fields, etc.), the
-	 * errors are presented and no actual login attempt is made.
+	 * errors are presented and no actual register attempt is made.
 	 */
-	public void attemptLogin() {
+	public void attemptRegister() {
 		if (mAuthTask != null) {
 			return;
 		}
@@ -130,10 +123,12 @@ public class LoginActivity extends Activity {
 		// Reset errors.
 		mEmailView.setError(null);
 		mPasswordView.setError(null);
+		mPasswordConfirmView.setError(null);
 
 		// Store values at the time of the login attempt.
 		mEmail = mEmailView.getText().toString();
 		mPassword = mPasswordView.getText().toString();
+		mPasswordConfirm = mPasswordConfirmView.getText().toString();
 
 		boolean cancel = false;
 		View focusView = null;
@@ -146,6 +141,13 @@ public class LoginActivity extends Activity {
 		} else if (mPassword.length() < 4) {
 			mPasswordView.setError(getString(R.string.error_invalid_password));
 			focusView = mPasswordView;
+			cancel = true;
+		}
+
+		// Check that the passwords are equal.
+		if (!mPasswordConfirm.equals(mPassword)) {
+			mPasswordConfirmView.setError(getString(R.string.error_not_identical));
+			focusView = mPasswordConfirmView;
 			cancel = true;
 		}
 

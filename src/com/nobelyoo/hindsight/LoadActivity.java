@@ -11,10 +11,12 @@ import org.apache.http.util.EntityUtils;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -23,10 +25,10 @@ public class LoadActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_load);
+		setContentView(R.layout.activity_load);
 
-        // Check for network availability
-        if (isNetworkAvailable() == true) {
+		// Check for network availability
+		if (isNetworkAvailable() == true) {
 			// Start a new thread that will download all the data
 			new LoadDataTask().execute();
 		} else {
@@ -35,16 +37,9 @@ public class LoadActivity extends Activity {
 			ProgressBar pb = (ProgressBar) findViewById(R.id.progressBarLoad);
 			pb.setVisibility(ProgressBar.INVISIBLE);
 		}
-        
-        Thread thread = new Thread(new Runnable(){
-            @Override
-            public void run() {
-                
-            }
-        });
-        thread.start(); 
+
 	}
-	
+
 	/*
 	 * Check for Internet connectivity
 	 */
@@ -56,7 +51,7 @@ public class LoadActivity extends Activity {
 		}
 		return false;
 	}
-	
+
 	/*
 	 * Goes to the LoginActivity
 	 */
@@ -74,32 +69,35 @@ public class LoadActivity extends Activity {
 		startActivity(intent);
 		finish();
 	}
-	
+
 	/*
 	 * Loads data in separate thread
 	 */
 	private class LoadDataTask extends AsyncTask<String, Void, Object> {
-		
+
 		private String result = null;
-		
+
 		protected Object doInBackground(String... args) {
 			try {
-            	// Create a new HttpClient and Post Header
-            	HttpClient httpClient = new DefaultHttpClient();
-            	HttpGet httpGet = new HttpGet("http://128.61.107.111:56788/users/provide_csrf/");
-            	HttpResponse getResponse = httpClient.execute(httpGet);
-            	
-            	HeaderElement CSRFTOKEN = getResponse.getFirstHeader("Set-Cookie").getElements()[0];
-                HttpPost httpPost = new HttpPost("http://128.61.107.111:56788/users/verify/");
-                httpPost.setHeader("X-CSRFToken", CSRFTOKEN.getValue());
-            	// Execute HTTP Post Request
-                HttpResponse response = httpClient.execute(httpPost);
-                // TODO - change to JSON object
-                result = EntityUtils.toString(response.getEntity());                
-                
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+				// Create a new HttpClient and Post Header
+				HttpClient httpClient = new DefaultHttpClient();
+				HttpGet httpGet = new HttpGet("http://128.61.107.111:56788/users/provide_csrf/");
+				// check session id for user
+				// Get saved preferences for current user
+				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+				String sessionid = prefs.getString("sessionid", null);
+				httpGet.setHeader("sessionid", sessionid);
+				HttpResponse getResponse = httpClient.execute(httpGet);
+				HeaderElement CSRFTOKEN = getResponse.getFirstHeader("Set-Cookie").getElements()[0];
+				HttpPost httpPost = new HttpPost("http://128.61.107.111:56788/users/verify/");
+				httpPost.setHeader("X-CSRFToken", CSRFTOKEN.getValue());
+				// Execute HTTP Post Request
+				HttpResponse response = httpClient.execute(httpPost);
+				// TODO - change to JSON object
+				result = EntityUtils.toString(response.getEntity());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			return null;
 		}
 
@@ -109,20 +107,20 @@ public class LoadActivity extends Activity {
 		protected void onPostExecute(Object result) {
 			sendOnwards();
 		}
-		
+
 		/*
 		 * Send to the next activity
 		 */
 		private void sendOnwards() {
-			if (result == "True") {
+			if (result.equals("True")) {
 				// Has connection and credentials
 				goHome();
-            } else {
-            	// Needs to login
-            	goLogin();
-            }
+			} else {
+				// Needs to login
+				goLogin();
+			}
 		}
 
 	}
-	
+
 }

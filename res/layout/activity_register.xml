@@ -61,17 +61,21 @@
                 android:maxLines="1"
                 android:singleLine="true" />
 
-            <Button
-                android:id="@+id/sign_in_button"
-                android:layout_width="wrap_content"
+            <EditText
+                android:id="@+id/passwordConfirm"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:paddingLeft="32dp"
-                android:paddingRight="32dp"
-                android:text="@string/action_sign_in_login" />
+                android:ems="10"
+                android:hint="@string/prompt_password_confirm"
+                android:imeActionId="@+id/login"
+                android:imeActionLabel="@string/action_sign_in_login"
+                android:imeOptions="actionUnspecified"
+                android:inputType="textPassword"
+                android:maxLines="1"
+                android:singleLine="true" />
 
             <Button
-                android:id="@+id/register_button"
+                android:id="@+id/sign_in_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="right"
@@ -79,9 +83,7 @@
                 android:paddingLeft="32dp"
                 android:paddingRight="32dp"
                 android:text="@string/action_sign_in_register" />
-
         </LinearLayout>
-
     </ScrollView>
 
 </merge>
