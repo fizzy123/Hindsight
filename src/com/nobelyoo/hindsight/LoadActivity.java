@@ -37,8 +37,8 @@ public class LoadActivity extends Activity {
 		} else {
 			// No Internet connection found
 			Toast.makeText(getBaseContext(), "No Internet Connection found", Toast.LENGTH_LONG).show();
-			ProgressBar pb = (ProgressBar) findViewById(R.id.progressBarLoad);
-			pb.setVisibility(ProgressBar.INVISIBLE);
+			findViewById(R.id.progressBarLoad).setVisibility(ProgressBar.INVISIBLE);
+			findViewById(R.id.textViewLoad).setVisibility(ProgressBar.INVISIBLE);
 		}
 
 	}

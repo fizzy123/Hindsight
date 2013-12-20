@@ -30,7 +30,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.KeyEvent;
-import android.view.Menu;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
@@ -116,13 +115,6 @@ public class LoginActivity extends Activity {
 		Intent intent = new Intent(getBaseContext(), RegisterActivity.class);
 		startActivity(intent);
 		finish();
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		super.onCreateOptionsMenu(menu);
-		getMenuInflater().inflate(R.menu.login, menu);
-		return true;
 	}
 
 	/**
@@ -237,6 +229,7 @@ public class LoginActivity extends Activity {
 		protected Boolean doInBackground(Void... params) {
 
 			try {
+				// Connect to the server and try to login
 				HttpClient httpClient = new DefaultHttpClient();
 				
 				// Get CSRF token
@@ -256,6 +249,7 @@ public class LoginActivity extends Activity {
 				response = httpClient.execute(httpPost);
 				
 				return true;
+
 			} catch (ClientProtocolException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
