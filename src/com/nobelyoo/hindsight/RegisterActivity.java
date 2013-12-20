@@ -21,7 +21,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.KeyEvent;
-import android.view.Menu;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
@@ -46,7 +45,8 @@ public class RegisterActivity extends Activity {
 
 	// Values for email and password at the time of the login attempt.
 	private String mEmail;
-	private String mPassword, mPasswordConfirm;
+	private String mPassword;
+	private String mPasswordConfirm;
 
 	// UI references.
 	private EditText mEmailView;
@@ -101,13 +101,6 @@ public class RegisterActivity extends Activity {
 				attemptRegister();
 			}
 		});
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		super.onCreateOptionsMenu(menu);
-		getMenuInflater().inflate(R.menu.login, menu);
-		return true;
 	}
 
 	/**
@@ -219,11 +212,13 @@ public class RegisterActivity extends Activity {
 		protected Boolean doInBackground(Void... params) {
 
 			try {
+				// Connect to the server and try to login
 				HttpClient httpClient = new DefaultHttpClient();
 				HttpPost httpPost = new HttpPost("http://128.61.107.111:56788/users/login/");
 				HttpResponse response = httpClient.execute(httpPost);
 				String result = EntityUtils.toString(response.getEntity());
 
+				// Check for response correctness
 				if (result.equals("True")) {
 					// Grab session_id from response
 					String sessionid = response.getFirstHeader("sessionid").getElements()[0].getValue();

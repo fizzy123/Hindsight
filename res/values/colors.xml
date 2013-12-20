@@ -2,10 +2,11 @@
 <resources>
 
     <!-- Gradient Colors -->
-<!--     <color name="gradient_start">#88cce7</color> -->
-<!--     <color name="gradient_end">#075e81</color> -->
     <color name="gradient_start">#98dcf7</color>
     <color name="gradient_end">#277ea1</color>
+    
+    <!-- Translucent Color -->
+    <color name="black_translucent">#44000000</color>
     
     <!-- Standard Colors -->
     <color name="white">#FFFFFF</color>
