@@ -217,11 +217,13 @@ public class LoginActivity extends Activity {
 		protected Boolean doInBackground(Void... params) {
 
 			try {
+				// Connect to the server and try to login
 				HttpClient httpClient = new DefaultHttpClient();
 				HttpPost httpPost = new HttpPost("http://128.61.107.111:56788/users/login/");
 				HttpResponse response = httpClient.execute(httpPost);
 				String result = EntityUtils.toString(response.getEntity());
 
+				// Check for response correctness
 				if (result.equals("True")) {
 					// Grab session_id from response
 					String sessionid = response.getFirstHeader("sessionid").getElements()[0].getValue();
