@@ -7,9 +7,6 @@
 # Java class files
 *.class
 
-# generated files
-gen/
-
 # Local configuration file (sdk path, etc)
 local.properties
 
