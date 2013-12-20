@@ -1,12 +1,20 @@
 package com.nobelyoo.hindsight;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.apache.http.Header;
+import org.apache.http.HeaderElement;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
 import android.animation.Animator;
@@ -208,31 +216,46 @@ public class LoginActivity extends Activity {
 		}
 	}
 
+	/*
+	 * Goes to the home screen
+	 */
+	private void goHome() {
+		Intent intent = new Intent(getBaseContext(), ItemListActivity.class);
+		startActivity(intent);
+		finish();
+	}
+	
 	/**
 	 * Represents an asynchronous login/registration task used to authenticate
 	 * the user.
 	 */
 	public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+		
+		private HttpResponse response = null;
+		
 		@Override
 		protected Boolean doInBackground(Void... params) {
 
 			try {
 				HttpClient httpClient = new DefaultHttpClient();
+				
+				// Get CSRF token
+				HttpGet httpGet = new HttpGet("http://128.61.107.111:56788/users/provide_csrf/");
+				HttpResponse getResponse = httpClient.execute(httpGet);
+				HeaderElement CSRFTOKEN = getResponse.getFirstHeader("Set-Cookie").getElements()[0];
+				
 				HttpPost httpPost = new HttpPost("http://128.61.107.111:56788/users/login/");
-				HttpResponse response = httpClient.execute(httpPost);
-				String result = EntityUtils.toString(response.getEntity());
-
-				if (result.equals("True")) {
-					// Grab session_id from response
-					String sessionid = response.getFirstHeader("sessionid").getElements()[0].getValue();
-					SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-					Editor edit = prefs.edit();
-					edit.putString("sessionid", sessionid);
-					edit.apply();
-				} else {
-					Toast.makeText(getApplicationContext(), "Login failed.", Toast.LENGTH_LONG).show();
-				}
-
+				httpPost.setHeader("X-CSRFToken", CSRFTOKEN.getValue()); //Attach CSRF token to POST request
+				
+				// Request parameters and other properties.
+				List<NameValuePair> context = new ArrayList<NameValuePair>(2);
+				context.add(new BasicNameValuePair("username", mEmail));
+				context.add(new BasicNameValuePair("password", mPassword));
+				httpPost.setEntity(new UrlEncodedFormEntity(context, "UTF-8"));
+				
+				response = httpClient.execute(httpPost);
+				
+				return true;
 			} catch (ClientProtocolException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -247,7 +270,24 @@ public class LoginActivity extends Activity {
 			mAuthTask = null;
 			showProgress(false);
 
-			if (success) {
+			//Grabs status code and session_id
+			int result = response.getStatusLine().getStatusCode();
+			
+			if (success && (result == 200)) {
+				// Save session_id in preferences
+				Header[] headers = response.getHeaders("Set-Cookie");
+				String sessionid = "";
+				for (Header header:headers){
+					if (header.getName().equals("sessionid")){
+						sessionid = header.getValue();
+					}
+				}
+				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+				Editor edit = prefs.edit();
+				edit.putString("sessionid", sessionid);
+				edit.apply();
+				//Go to home screen
+				goHome();
 				finish();
 			} else {
 				mPasswordView.setError(getString(R.string.error_incorrect_password));

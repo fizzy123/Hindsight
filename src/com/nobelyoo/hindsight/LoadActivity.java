@@ -1,5 +1,6 @@
 package com.nobelyoo.hindsight;
 
+import org.apache.http.Header;
 import org.apache.http.HeaderElement;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -7,6 +8,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.Context;
@@ -75,30 +78,40 @@ public class LoadActivity extends Activity {
 	 */
 	private class LoadDataTask extends AsyncTask<String, Void, Object> {
 
-		private String result = null;
+		private int result = 0;
 
 		protected Object doInBackground(String... args) {
 			try {
-				// Create a new HttpClient and Post Header
+				// Create a new HttpClient
 				HttpClient httpClient = new DefaultHttpClient();
+				
+				// Get CSRF token
 				HttpGet httpGet = new HttpGet("http://128.61.107.111:56788/users/provide_csrf/");
+				HttpResponse getResponse = httpClient.execute(httpGet);
+				Header[] headers = getResponse.getHeaders("Set-Cookie");
+				String CSRFTOKEN = "";
+				for (Header header:headers){
+					if (header.getName().equals("csrftoken")){
+						CSRFTOKEN = header.getValue();
+					}
+				}
 				// check session id for user
 				// Get saved preferences for current user
 				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 				String sessionid = prefs.getString("sessionid", null);
 				httpGet.setHeader("sessionid", sessionid);
-				HttpResponse getResponse = httpClient.execute(httpGet);
-				HeaderElement CSRFTOKEN = getResponse.getFirstHeader("Set-Cookie").getElements()[0];
+				
+				// Verify if user has a valid session id
 				HttpPost httpPost = new HttpPost("http://128.61.107.111:56788/users/verify/");
-				httpPost.setHeader("X-CSRFToken", CSRFTOKEN.getValue());
+				httpPost.setHeader("X-CSRFToken", CSRFTOKEN);
 				// Execute HTTP Post Request
 				HttpResponse response = httpClient.execute(httpPost);
-				// TODO - change to JSON object
-				result = EntityUtils.toString(response.getEntity());
+				result = response.getStatusLine().getStatusCode();
+				return true;
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			return null;
+			return false;
 		}
 
 		/*
@@ -112,7 +125,7 @@ public class LoadActivity extends Activity {
 		 * Send to the next activity
 		 */
 		private void sendOnwards() {
-			if (result.equals("True")) {
+			if (result == 200) {
 				// Has connection and credentials
 				goHome();
 			} else {

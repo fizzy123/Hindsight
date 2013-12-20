@@ -1,18 +1,26 @@
 package com.nobelyoo.hindsight;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.apache.http.HeaderElement;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
@@ -210,31 +218,45 @@ public class RegisterActivity extends Activity {
 		}
 	}
 
+	/*
+	 * Goes to the home screen
+	 */
+	private void goHome() {
+		Intent intent = new Intent(getBaseContext(), ItemListActivity.class);
+		startActivity(intent);
+		finish();
+	}
+	
 	/**
 	 * Represents an asynchronous login/registration task used to authenticate
 	 * the user.
 	 */
 	public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+		
+		private HttpResponse response = null;
 		@Override
 		protected Boolean doInBackground(Void... params) {
 
 			try {
 				HttpClient httpClient = new DefaultHttpClient();
-				HttpPost httpPost = new HttpPost("http://128.61.107.111:56788/users/login/");
-				HttpResponse response = httpClient.execute(httpPost);
-				String result = EntityUtils.toString(response.getEntity());
+				
+				// Get CSRF token
+				HttpGet httpGet = new HttpGet("http://128.61.107.111:56788/users/provide_csrf/");
+				HttpResponse getResponse = httpClient.execute(httpGet);
+				HeaderElement CSRFTOKEN = getResponse.getFirstHeader("Set-Cookie").getElements()[0];
+				
+				HttpPost httpPost = new HttpPost("http://128.61.107.111:56788/users/create/");
+				httpPost.setHeader("X-CSRFToken", CSRFTOKEN.getValue()); //Attach CSRF token to POST request
+				
+				// Request parameters and other properties.
+				List<NameValuePair> context = new ArrayList<NameValuePair>(2);
+				context.add(new BasicNameValuePair("username", mEmail));
+				context.add(new BasicNameValuePair("password", mPassword));
+				httpPost.setEntity(new UrlEncodedFormEntity(context, "UTF-8"));
+				
+				response = httpClient.execute(httpPost);
 
-				if (result.equals("True")) {
-					// Grab session_id from response
-					String sessionid = response.getFirstHeader("sessionid").getElements()[0].getValue();
-					SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-					Editor edit = prefs.edit();
-					edit.putString("sessionid", sessionid);
-					edit.apply();
-				} else {
-					Toast.makeText(getApplicationContext(), "Login failed.", Toast.LENGTH_LONG).show();
-				}
-
+				return true;
 			} catch (ClientProtocolException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -249,10 +271,13 @@ public class RegisterActivity extends Activity {
 			mAuthTask = null;
 			showProgress(false);
 
-			if (success) {
+			int result = response.getStatusLine().getStatusCode();
+
+			if (result == 200) {
+				goHome();
 				finish();
 			} else {
-				mPasswordView.setError(getString(R.string.error_incorrect_password));
+				Toast.makeText(getApplicationContext(), "Registration Failed", Toast.LENGTH_LONG).show();
 				mPasswordView.requestFocus();
 			}
 		}
