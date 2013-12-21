@@ -95,14 +95,15 @@ public class LoadActivity extends Activity {
 						CSRFTOKEN = header.getValue();
 					}
 				}
+				
 				// check session id for user
 				// Get saved preferences for current user
 				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 				String sessionid = prefs.getString("sessionid", null);
-				httpGet.setHeader("sessionid", sessionid);
 				
 				// Verify if user has a valid session id
 				HttpPost httpPost = new HttpPost("http://128.61.107.111:56788/users/verify/");
+				httpPost.setHeader("sessionid", sessionid);
 				httpPost.setHeader("X-CSRFToken", CSRFTOKEN);
 				// Execute HTTP Post Request
 				HttpResponse response = httpClient.execute(httpPost);

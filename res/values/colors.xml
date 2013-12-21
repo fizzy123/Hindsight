@@ -2,8 +2,8 @@
 <resources>
 
     <!-- Gradient Colors -->
-    <color name="gradient_start">#98dcf7</color>
-    <color name="gradient_end">#277ea1</color>
+    <color name="gradient_start">#a6e2f9</color>
+    <color name="gradient_end">#176685</color>
     
     <!-- Translucent Color -->
     <color name="black_translucent">#44000000</color>
