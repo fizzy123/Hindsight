@@ -88,11 +88,11 @@ public class LoadActivity extends Activity {
 				// Get CSRF token
 				HttpGet httpGet = new HttpGet("http://128.61.107.111:56788/users/provide_csrf/");
 				HttpResponse getResponse = httpClient.execute(httpGet);
-				Header[] headers = getResponse.getHeaders("Set-Cookie");
+				HeaderElement[] headerElements = getResponse.getFirstHeader("Set-Cookie").getElements();
 				String CSRFTOKEN = "";
-				for (Header header:headers){
-					if (header.getName().equals("csrftoken")){
-						CSRFTOKEN = header.getValue();
+				for (HeaderElement element:headerElements){
+					if (element.getName().equals("csrftoken")){
+						CSRFTOKEN = element.getValue();
 					}
 				}
 				

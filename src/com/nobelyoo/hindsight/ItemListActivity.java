@@ -52,8 +52,83 @@ public class ItemListActivity extends FragmentActivity implements ItemListFragme
 	 */
 	private boolean mTwoPane;
 
-	private Location currentLocation;
+	private Location currentLocation = null;
 	private LocationManager locationManager;
+	// Define a listener that responds to location updates
+	private LocationListener locationListener = new LocationListener() {
+	    public void onLocationChanged(Location location) {
+	      if (currentLocation == null) {
+	    	  locationManager.removeUpdates(locationListener);
+	    	  new LoadMemoriesTask().execute();
+	      }
+	      if (isBetterLocation(location, currentLocation)){
+	    	  currentLocation = location;
+	      }
+	    }
+
+	    public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+	    public void onProviderEnabled(String provider) {}
+
+	    public void onProviderDisabled(String provider) {}
+	};
+				  
+	private static final int TWO_MINUTES = 1000 * 60 * 2;
+
+    /** Determines whether one Location reading is better than the current Location fix
+      * @param location  The new Location that you want to evaluate
+      * @param currentBestLocation  The current Location fix, to which you want to compare the new one
+      */
+    protected boolean isBetterLocation(Location location, Location currentBestLocation) {
+        if (currentBestLocation == null) {
+            // A new location is always better than no location
+            return true;
+        }
+
+        // Check whether the new location fix is newer or older
+        long timeDelta = location.getTime() - currentBestLocation.getTime();
+        boolean isSignificantlyNewer = timeDelta > TWO_MINUTES;
+        boolean isSignificantlyOlder = timeDelta < -TWO_MINUTES;
+        boolean isNewer = timeDelta > 0;
+
+        // If it's been more than two minutes since the current location, use the new location
+        // because the user has likely moved
+        if (isSignificantlyNewer) {
+            return true;
+        // If the new location is more than two minutes older, it must be worse
+        } else if (isSignificantlyOlder) {
+            return false;
+        }
+
+        // Check whether the new location fix is more or less accurate
+        int accuracyDelta = (int) (location.getAccuracy() - currentBestLocation.getAccuracy());
+        boolean isLessAccurate = accuracyDelta > 0;
+        boolean isMoreAccurate = accuracyDelta < 0;
+        boolean isSignificantlyLessAccurate = accuracyDelta > 200;
+
+        // Check if the old and new location are from the same provider
+        boolean isFromSameProvider = isSameProvider(location.getProvider(),
+                currentBestLocation.getProvider());
+
+        // Determine location quality using a combination of timeliness and accuracy
+        if (isMoreAccurate) {
+            return true;
+        } else if (isNewer && !isLessAccurate) {
+            return true;
+        } else if (isNewer && !isSignificantlyLessAccurate && isFromSameProvider) {
+            return true;
+        }
+        return false;
+    }
+
+    /** Checks whether two providers are the same */
+    private boolean isSameProvider(String provider1, String provider2) {
+        if (provider1 == null) {
+          return provider2 == null;
+        }
+        return provider1.equals(provider2);
+    }
+    
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -62,6 +137,9 @@ public class ItemListActivity extends FragmentActivity implements ItemListFragme
 		// Acquire a reference to the system Location Manager
 		locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
+		locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+		
 		locationHandler.postDelayed(locationRunnable, 0);
 		
 		if (findViewById(R.id.item_detail_container) != null) {
@@ -115,94 +193,27 @@ public class ItemListActivity extends FragmentActivity implements ItemListFragme
 	 * Re-runs LoadsLocationTask whenever the locations is detected to have changed significantly.
 	 */
 	Handler locationHandler = new Handler();
+	
+	Runnable updateViewRunnable = new Runnable() {
+		@Override
+		public void run() {
+			locationManager.removeUpdates(locationListener);
+			new LoadMemoriesTask().execute();
+			locationHandler.postDelayed(locationRunnable, 30000);
+		}
+	};
+	
 	Runnable locationRunnable = new Runnable() {
 
         @Override
         public void run() {
-        	// Define a listener that responds to location updates
-			LocationListener locationListener = new LocationListener() {
-			    public void onLocationChanged(Location location) {
-			      
-			      if (isBetterLocation(location, currentLocation)){
-			    	  currentLocation = location;
-			      }
-			    }
-
-			    public void onStatusChanged(String provider, int status, Bundle extras) {}
-
-			    public void onProviderEnabled(String provider) {}
-
-			    public void onProviderDisabled(String provider) {}
-			  };
-
 			// Register the listener with the Location Manager to receive location updates
 			locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
-			try {
-				wait(12000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			locationManager.removeUpdates(locationListener);
-			new LoadMemoriesTask().execute();
-			// Update views
-            locationHandler.postDelayed(this, 30000);
+			locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+            locationHandler.postDelayed(updateViewRunnable, 30000);
         }
         
-        private static final int TWO_MINUTES = 1000 * 60 * 2;
-
-        /** Determines whether one Location reading is better than the current Location fix
-          * @param location  The new Location that you want to evaluate
-          * @param currentBestLocation  The current Location fix, to which you want to compare the new one
-          */
-        protected boolean isBetterLocation(Location location, Location currentBestLocation) {
-            if (currentBestLocation == null) {
-                // A new location is always better than no location
-                return true;
-            }
-
-            // Check whether the new location fix is newer or older
-            long timeDelta = location.getTime() - currentBestLocation.getTime();
-            boolean isSignificantlyNewer = timeDelta > TWO_MINUTES;
-            boolean isSignificantlyOlder = timeDelta < -TWO_MINUTES;
-            boolean isNewer = timeDelta > 0;
-
-            // If it's been more than two minutes since the current location, use the new location
-            // because the user has likely moved
-            if (isSignificantlyNewer) {
-                return true;
-            // If the new location is more than two minutes older, it must be worse
-            } else if (isSignificantlyOlder) {
-                return false;
-            }
-
-            // Check whether the new location fix is more or less accurate
-            int accuracyDelta = (int) (location.getAccuracy() - currentBestLocation.getAccuracy());
-            boolean isLessAccurate = accuracyDelta > 0;
-            boolean isMoreAccurate = accuracyDelta < 0;
-            boolean isSignificantlyLessAccurate = accuracyDelta > 200;
-
-            // Check if the old and new location are from the same provider
-            boolean isFromSameProvider = isSameProvider(location.getProvider(),
-                    currentBestLocation.getProvider());
-
-            // Determine location quality using a combination of timeliness and accuracy
-            if (isMoreAccurate) {
-                return true;
-            } else if (isNewer && !isLessAccurate) {
-                return true;
-            } else if (isNewer && !isSignificantlyLessAccurate && isFromSameProvider) {
-                return true;
-            }
-            return false;
-        }
-
-        /** Checks whether two providers are the same */
-        private boolean isSameProvider(String provider1, String provider2) {
-            if (provider1 == null) {
-              return provider2 == null;
-            }
-            return provider1.equals(provider2);
-        }
+        
     };
 	
 	/*
@@ -218,7 +229,7 @@ public class ItemListActivity extends FragmentActivity implements ItemListFragme
 				HttpClient httpClient = new DefaultHttpClient();
 				HttpGet httpGet = new HttpGet("http://128.61.107.111:56788/memories/view_near/" + 
 				"?latitude=" + Double.toString(currentLocation.getLatitude()) + 
-				"?longitude=" + Double.toString(currentLocation.getLongitude()));
+				"&longitude=" + Double.toString(currentLocation.getLongitude()));
 				// check session id for user
 				// Get saved preferences for current user
 				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());

@@ -235,10 +235,16 @@ public class LoginActivity extends Activity {
 				// Get CSRF token
 				HttpGet httpGet = new HttpGet("http://128.61.107.111:56788/users/provide_csrf/");
 				HttpResponse getResponse = httpClient.execute(httpGet);
-				HeaderElement CSRFTOKEN = getResponse.getFirstHeader("Set-Cookie").getElements()[0];
+				HeaderElement[] headerElements = getResponse.getFirstHeader("Set-Cookie").getElements();
+				String CSRFTOKEN = "";
+				for (HeaderElement element:headerElements){
+					if (element.getName().equals("csrftoken")){
+						CSRFTOKEN = element.getValue();
+					}
+				}
 				
 				HttpPost httpPost = new HttpPost("http://128.61.107.111:56788/users/login/");
-				httpPost.setHeader("X-CSRFToken", CSRFTOKEN.getValue()); //Attach CSRF token to POST request
+				httpPost.setHeader("X-CSRFToken", CSRFTOKEN); //Attach CSRF token to POST request
 				
 				// Request parameters and other properties.
 				List<NameValuePair> context = new ArrayList<NameValuePair>(2);
