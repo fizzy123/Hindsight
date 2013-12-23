@@ -68,6 +68,7 @@ public final class R {
     public static final class id {
         public static final int RelativeLayoutMain=0x7f0a0002;
         public static final int email=0x7f0a000a;
+        public static final int firstLine=0x7f0a0011;
         public static final int item_detail=0x7f0a0010;
         public static final int item_detail_container=0x7f0a0000;
         public static final int item_list=0x7f0a0001;
@@ -79,6 +80,7 @@ public final class R {
         public static final int passwordConfirm=0x7f0a000f;
         public static final int progressBarLoad=0x7f0a0005;
         public static final int register_button=0x7f0a000e;
+        public static final int secondLine=0x7f0a0012;
         public static final int sign_in_button=0x7f0a000d;
         public static final int textViewInfo=0x7f0a0003;
         public static final int textViewLoad=0x7f0a0006;
@@ -107,6 +109,7 @@ public final class R {
         public static final int activity_login=0x7f030004;
         public static final int activity_register=0x7f030005;
         public static final int fragment_item_detail=0x7f030006;
+        public static final int list_item=0x7f030007;
     }
     public static final class string {
         public static final int action_forgot_password=0x7f07000d;

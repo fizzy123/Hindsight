@@ -246,6 +246,7 @@ public class RegisterActivity extends Activity {
 					}
 				}
 				
+				// Build POST request
 				HttpPost httpPost = new HttpPost("http://128.61.107.111:56788/users/create/");
 				httpPost.setHeader("X-CSRFToken", CSRFTOKEN); //Attach CSRF token to POST request
 				
@@ -255,6 +256,7 @@ public class RegisterActivity extends Activity {
 				context.add(new BasicNameValuePair("password", mPassword));
 				httpPost.setEntity(new UrlEncodedFormEntity(context, "UTF-8"));
 				
+				// Executes POST request
 				response = httpClient.execute(httpPost);
 
 				return true;
@@ -274,6 +276,7 @@ public class RegisterActivity extends Activity {
 
 			int result = response.getStatusLine().getStatusCode();
 
+			// If server returns successful, go to home screen.
 			if (result == 200) {
 				goHome();
 				finish();

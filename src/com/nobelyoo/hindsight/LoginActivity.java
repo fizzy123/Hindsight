@@ -243,6 +243,7 @@ public class LoginActivity extends Activity {
 					}
 				}
 				
+				// Build Post Request
 				HttpPost httpPost = new HttpPost("http://128.61.107.111:56788/users/login/");
 				httpPost.setHeader("X-CSRFToken", CSRFTOKEN); //Attach CSRF token to POST request
 				
@@ -252,6 +253,7 @@ public class LoginActivity extends Activity {
 				context.add(new BasicNameValuePair("password", mPassword));
 				httpPost.setEntity(new UrlEncodedFormEntity(context, "UTF-8"));
 				
+				//Execute POST Request
 				response = httpClient.execute(httpPost);
 				
 				return true;
@@ -273,8 +275,9 @@ public class LoginActivity extends Activity {
 			//Grabs status code and session_id
 			int result = response.getStatusLine().getStatusCode();
 			
+			// If everything is successful
 			if (success && (result == 200)) {
-				// Save session_id in preferences
+				// Get sessionid from headers
 				Header[] headers = response.getHeaders("Set-Cookie");
 				String sessionid = "";
 				for (Header header:headers){
@@ -282,6 +285,7 @@ public class LoginActivity extends Activity {
 						sessionid = header.getValue();
 					}
 				}
+				// Save sessionid in preferences
 				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 				Editor edit = prefs.edit();
 				edit.putString("sessionid", sessionid);
@@ -290,6 +294,7 @@ public class LoginActivity extends Activity {
 				goHome();
 				finish();
 			} else {
+				// Assumes that password was incorrect, but is probably not safe assumption to make
 				mPasswordView.setError(getString(R.string.error_incorrect_password));
 				mPasswordView.requestFocus();
 			}

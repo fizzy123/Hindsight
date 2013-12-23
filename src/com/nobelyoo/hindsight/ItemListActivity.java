@@ -17,8 +17,11 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -31,6 +34,13 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
 
 /**
  * An activity representing a list of Items. This activity
@@ -44,14 +54,42 @@ import android.support.v4.app.FragmentActivity;
  * <p>
  * This activity also implements the required {@link ItemListFragment.Callbacks} interface to listen for item selections.
  */
-public class ItemListActivity extends FragmentActivity implements ItemListFragment.Callbacks {
+public class ItemListActivity extends Activity {
 
-	/**
-	 * Whether or not the activity is in two-pane mode, i.e. running on a tablet
-	 * device.
-	 */
-	private boolean mTwoPane;
+    private JSONArray result = null;
 
+	private ItemListActivity activity;
+	private ListView listview;
+	private JSONAdapter adapter;
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		// Instantiate List view stuff 
+		setContentView(R.layout.activity_item_list);
+		listview = (ListView) findViewById(R.id.item_list);
+		adapter = new JSONAdapter(activity);
+		listview.setAdapter(adapter);
+		activity = this;
+		
+		// Acquire a reference to the system Location Manager
+		locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+
+		// Request location updates from GPS and NETWORK
+		locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+		
+		// Start task that regularly checks location to see if it should update
+		locationHandler.postDelayed(locationRunnable, 0);
+	}
+	@Override
+	protected void onStop() {
+		super.onStop();
+		
+		// Remove location checking tasks
+		locationHandler.removeCallbacks(locationRunnable);
+	}
+	
 	private Location currentLocation = null;
 	private LocationManager locationManager;
 	// Define a listener that responds to location updates
@@ -59,7 +97,11 @@ public class ItemListActivity extends FragmentActivity implements ItemListFragme
 	    public void onLocationChanged(Location location) {
 	      if (currentLocation == null) {
 	    	  locationManager.removeUpdates(locationListener);
-	    	  new LoadMemoriesTask().execute();
+	    	  runOnUiThread(new Runnable() {
+	    		  public void run() { 
+	    			  new LoadMemoriesTask().execute();
+		          }
+			  });
 	      }
 	      if (isBetterLocation(location, currentLocation)){
 	    	  currentLocation = location;
@@ -129,101 +171,45 @@ public class ItemListActivity extends FragmentActivity implements ItemListFragme
         return provider1.equals(provider2);
     }
     
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_item_list);
-
-		// Acquire a reference to the system Location Manager
-		locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-
-		locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
-		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-		
-		locationHandler.postDelayed(locationRunnable, 0);
-		
-		if (findViewById(R.id.item_detail_container) != null) {
-			// The detail container view will be present only in the
-			// large-screen layouts (res/values-large and
-			// res/values-sw600dp). If this view is present, then the
-			// activity should be in two-pane mode.
-			mTwoPane = true;
-
-			// In two-pane mode, list items should be given the
-			// 'activated' state when touched.
-			((ItemListFragment) getSupportFragmentManager().findFragmentById(R.id.item_list)).setActivateOnItemClick(true);
-		}
-
-		// TODO: If exposing deep links into your app, handle intents here.
-	}
-
-	@Override
-	protected void onStop() {
-		super.onStop();
-		locationHandler.removeCallbacks(locationRunnable);
-	}
-	
-	/**
-	 * Callback method from {@link ItemListFragment.Callbacks} indicating that the item with the given ID was selected.
-	 */
-	@Override
-	public void onItemSelected(String id) {
-		if (mTwoPane) {
-			// In two-pane mode, show the detail view in this activity by
-			// adding or replacing the detail fragment using a
-			// fragment transaction.
-			Bundle arguments = new Bundle();
-			arguments.putString(ItemDetailFragment.ARG_ITEM_ID, id);
-			ItemDetailFragment fragment = new ItemDetailFragment();
-			fragment.setArguments(arguments);
-			getSupportFragmentManager().beginTransaction().replace(R.id.item_detail_container, fragment).commit();
-
-		} else {
-			// In single-pane mode, simply start the detail activity
-			// for the selected item ID.
-			Intent detailIntent = new Intent(this, ItemDetailActivity.class);
-			detailIntent.putExtra(ItemDetailFragment.ARG_ITEM_ID, id);
-			startActivity(detailIntent);
-		}
-	}
-	
 	/*
-	 * Checks for updated location data at 2 minute intervals
+	 * Checks for updated location data at 5 minute intervals
 	 * 
 	 * Re-runs LoadsLocationTask whenever the locations is detected to have changed significantly.
 	 */
-	Handler locationHandler = new Handler();
+	private Handler locationHandler = new Handler();
 	
-	Runnable updateViewRunnable = new Runnable() {
+	// Stops listening for location updates, executes LoadMemoriesTask and schedules locationRunnable
+	private Runnable updateViewRunnable = new Runnable() {
 		@Override
 		public void run() {
 			locationManager.removeUpdates(locationListener);
-			new LoadMemoriesTask().execute();
+			runOnUiThread(new Runnable() {
+				public void run() { 
+					new LoadMemoriesTask().execute();
+	            }
+		    });
 			locationHandler.postDelayed(locationRunnable, 30000);
 		}
 	};
 	
-	Runnable locationRunnable = new Runnable() {
+	// Starts listening for location updates and schedules updateViewRunnable to run in 2 min
+	private Runnable locationRunnable = new Runnable() {
 
         @Override
         public void run() {
 			// Register the listener with the Location Manager to receive location updates
 			locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
 			locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-            locationHandler.postDelayed(updateViewRunnable, 30000);
+            locationHandler.postDelayed(updateViewRunnable, 12000);
         }
-        
-        
     };
 	
 	/*
 	 * Loads data in separate thread
 	 */
 	private class LoadMemoriesTask extends AsyncTask<String, Void, Object> {
-
-		private JSONObject result = null;
-
-		protected Object doInBackground(String... args) {
+	    
+		protected Boolean doInBackground(String... args) {
 			try {
 				// Create a new HttpClient and build GET request
 				HttpClient httpClient = new DefaultHttpClient();
@@ -237,8 +223,8 @@ public class ItemListActivity extends FragmentActivity implements ItemListFragme
 				httpGet.setHeader("sessionid", sessionid);
 				
 				HttpResponse response = httpClient.execute(httpGet);
-				
-				result = new JSONObject(convertStreamToString(response.getEntity().getContent()));
+				JSONObject json = new JSONObject(convertStreamToString(response.getEntity().getContent()));
+				result = json.getJSONArray("memories");
 				return true;
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -250,13 +236,14 @@ public class ItemListActivity extends FragmentActivity implements ItemListFragme
 		 * Populate list view
 		 */
 		protected void onPostExecute(Boolean success) {
+			// If successful, refresh list view
 			if (success) {
-				// Pass info from results to list view
+				adapter.notifyDataSetChanged();
 			}
 		}
 	}
 	
-	// Converts Steam to String
+	// Converts Stream to String
 	private static String convertStreamToString(InputStream is) {
 
 	    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
@@ -277,5 +264,51 @@ public class ItemListActivity extends FragmentActivity implements ItemListFragme
 	        }
 	    }
 	    return sb.toString();
+	}
+	
+	private class JSONAdapter extends BaseAdapter implements ListAdapter {
+
+	    private final Activity activity;
+	    private final JSONArray jsonArray;
+	    private JSONAdapter(Activity activity) {
+	        this.jsonArray = result;
+	        this.activity = activity;
+	    }
+
+
+	    @Override public int getCount() {
+	    	if (jsonArray == null) {
+	    		return 0;
+	    	} else {
+	    		return jsonArray.length();
+	    	}
+	        
+	    }
+
+	    @Override public JSONObject getItem(int position) {
+
+	        return jsonArray.optJSONObject(position);
+	    }
+
+	    @Override public long getItemId(int position) {
+	        JSONObject jsonObject = getItem(position);
+
+	        return jsonObject.optLong("id");
+	    }
+
+	    @Override public View getView(int position, View convertView, ViewGroup parent) {
+	    	LayoutInflater inflater = (LayoutInflater) activity
+	    	        .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+	    	View rowView = inflater.inflate(R.layout.list_item, parent, false);
+	    	    TextView textView1 = (TextView) rowView.findViewById(R.id.firstLine);
+	    	    TextView textView2 = (TextView) rowView.findViewById(R.id.secondLine);
+	    	    try {
+					textView1.setText(jsonArray.getJSONObject(position).getString("image"));
+					textView2.setText(jsonArray.getJSONObject(position).getString("distance"));
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+	    	    return rowView;
+	    }
 	}
 }
