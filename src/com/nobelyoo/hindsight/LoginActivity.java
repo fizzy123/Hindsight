@@ -280,11 +280,14 @@ public class LoginActivity extends Activity {
 				// Get sessionid from headers
 				Header[] headers = response.getHeaders("Set-Cookie");
 				String sessionid = "";
-				for (Header header:headers){
-					if (header.getName().equals("sessionid")){
-						sessionid = header.getValue();
+				for (Header header:headers) {
+					for (HeaderElement element:header.getElements()){
+						if (element.getName().equals("sessionid")){
+							sessionid = element.getValue();
+						}
 					}
 				}
+				
 				// Save sessionid in preferences
 				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 				Editor edit = prefs.edit();

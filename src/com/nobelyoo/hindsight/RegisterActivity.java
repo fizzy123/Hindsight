@@ -238,11 +238,13 @@ public class RegisterActivity extends Activity {
 				// Get CSRF token
 				HttpGet httpGet = new HttpGet("http://128.61.107.111:56788/users/provide_csrf/");
 				HttpResponse getResponse = httpClient.execute(httpGet);
-				HeaderElement[] headerElements = getResponse.getFirstHeader("Set-Cookie").getElements();
+				Header[] headers = getResponse.getHeaders("Set-Cookie");
 				String CSRFTOKEN = "";
-				for (HeaderElement element:headerElements){
-					if (element.getName().equals("csrftoken")){
-						CSRFTOKEN = element.getValue();
+				for (Header header:headers) {
+					for (HeaderElement element:header.getElements()){
+						if (element.getName().equals("csrftoken")){
+							CSRFTOKEN = element.getValue();
+						}
 					}
 				}
 				

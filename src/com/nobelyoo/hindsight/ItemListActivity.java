@@ -59,7 +59,7 @@ public class ItemListActivity extends Activity {
     private JSONArray result = null;
 
 	private ItemListActivity activity;
-	private ListView listview;
+	private ListView listView;
 	private JSONAdapter adapter;
 	
 	@Override
@@ -67,21 +67,23 @@ public class ItemListActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		// Instantiate List view stuff 
 		setContentView(R.layout.activity_item_list);
-		listview = (ListView) findViewById(R.id.item_list);
+		listView = (ListView) findViewById(R.id.item_list);
 		adapter = new JSONAdapter(activity);
-		listview.setAdapter(adapter);
+		listView.setAdapter(adapter);
 		activity = this;
+		new LoadMemoriesTask().execute();
 		
 		// Acquire a reference to the system Location Manager
-		locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+		//locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
 		// Request location updates from GPS and NETWORK
-		locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
-		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+		//locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+		//locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
 		
 		// Start task that regularly checks location to see if it should update
-		locationHandler.postDelayed(locationRunnable, 0);
+		//locationHandler.postDelayed(locationRunnable, 0);
 	}
+	
 	@Override
 	protected void onStop() {
 		super.onStop();
@@ -99,7 +101,7 @@ public class ItemListActivity extends Activity {
 	    	  locationManager.removeUpdates(locationListener);
 	    	  runOnUiThread(new Runnable() {
 	    		  public void run() { 
-	    			  new LoadMemoriesTask().execute();
+	    			  //new LoadMemoriesTask().execute();
 		          }
 			  });
 	      }
@@ -185,7 +187,7 @@ public class ItemListActivity extends Activity {
 			locationManager.removeUpdates(locationListener);
 			runOnUiThread(new Runnable() {
 				public void run() { 
-					new LoadMemoriesTask().execute();
+					//new LoadMemoriesTask().execute();
 	            }
 		    });
 			locationHandler.postDelayed(locationRunnable, 30000);
@@ -204,18 +206,20 @@ public class ItemListActivity extends Activity {
         }
     };
 	
-	/*
+	/**
 	 * Loads data in separate thread
 	 */
-	private class LoadMemoriesTask extends AsyncTask<String, Void, Object> {
+	private class LoadMemoriesTask extends AsyncTask<Void, Void, Boolean> {
 	    
-		protected Boolean doInBackground(String... args) {
+		int test;
+		protected Boolean doInBackground(Void... args) {
 			try {
 				// Create a new HttpClient and build GET request
 				HttpClient httpClient = new DefaultHttpClient();
-				HttpGet httpGet = new HttpGet("http://128.61.107.111:56788/memories/view_near/" + 
-				"?latitude=" + Double.toString(currentLocation.getLatitude()) + 
-				"&longitude=" + Double.toString(currentLocation.getLongitude()));
+				HttpGet httpGet = new HttpGet("http://128.61.107.111:56788/memories/view_near/?latitude=33.775422&longitude=-84.3910626"); 
+				//+ 
+				//"?latitude=" + Double.toString(currentLocation.getLatitude()) + 
+				//"&longitude=" + Double.toString(currentLocation.getLongitude()));
 				// check session id for user
 				// Get saved preferences for current user
 				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -238,7 +242,9 @@ public class ItemListActivity extends Activity {
 		protected void onPostExecute(Boolean success) {
 			// If successful, refresh list view
 			if (success) {
-				adapter.notifyDataSetChanged();
+				//test = adapter.getCount();
+				// I think this is a bad way of doing it, but I don't know how to get notifyDataSetChanged to work
+				listView.setAdapter(new JSONAdapter(activity));
 			}
 		}
 	}
@@ -269,30 +275,24 @@ public class ItemListActivity extends Activity {
 	private class JSONAdapter extends BaseAdapter implements ListAdapter {
 
 	    private final Activity activity;
-	    private final JSONArray jsonArray;
 	    private JSONAdapter(Activity activity) {
-	        this.jsonArray = result;
 	        this.activity = activity;
 	    }
-
-
+	    
 	    @Override public int getCount() {
-	    	if (jsonArray == null) {
+	    	if (result == null) {
 	    		return 0;
 	    	} else {
-	    		return jsonArray.length();
+	    		return result.length();
 	    	}
-	        
 	    }
 
 	    @Override public JSONObject getItem(int position) {
-
-	        return jsonArray.optJSONObject(position);
+	        return result.optJSONObject(position);
 	    }
 
 	    @Override public long getItemId(int position) {
 	        JSONObject jsonObject = getItem(position);
-
 	        return jsonObject.optLong("id");
 	    }
 
@@ -300,15 +300,15 @@ public class ItemListActivity extends Activity {
 	    	LayoutInflater inflater = (LayoutInflater) activity
 	    	        .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 	    	View rowView = inflater.inflate(R.layout.list_item, parent, false);
-	    	    TextView textView1 = (TextView) rowView.findViewById(R.id.firstLine);
-	    	    TextView textView2 = (TextView) rowView.findViewById(R.id.secondLine);
-	    	    try {
-					textView1.setText(jsonArray.getJSONObject(position).getString("image"));
-					textView2.setText(jsonArray.getJSONObject(position).getString("distance"));
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}
-	    	    return rowView;
+    	    TextView textView1 = (TextView) rowView.findViewById(R.id.firstLine);
+    	    TextView textView2 = (TextView) rowView.findViewById(R.id.secondLine);
+    	    try {
+				textView1.setText(result.getJSONObject(position).getString("image"));
+				textView2.setText(result.getJSONObject(position).getString("distance"));
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+    	    return rowView;
 	    }
 	}
 }
