@@ -38,6 +38,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -61,7 +62,7 @@ public class ItemListActivity extends Activity {
 	private ItemListActivity activity;
 	private ListView listView;
 	private JSONAdapter adapter;
-	
+	private ImageLoader imageLoader;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -71,6 +72,7 @@ public class ItemListActivity extends Activity {
 		adapter = new JSONAdapter(activity);
 		listView.setAdapter(adapter);
 		activity = this;
+		imageLoader = new ImageLoader(this);
 		new LoadMemoriesTask().execute();
 		
 		// Acquire a reference to the system Location Manager
@@ -300,11 +302,13 @@ public class ItemListActivity extends Activity {
 	    	LayoutInflater inflater = (LayoutInflater) activity
 	    	        .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 	    	View rowView = inflater.inflate(R.layout.list_item, parent, false);
-    	    TextView textView1 = (TextView) rowView.findViewById(R.id.firstLine);
-    	    TextView textView2 = (TextView) rowView.findViewById(R.id.secondLine);
+	    	ImageView imageView = (ImageView) rowView.findViewById(R.id.image);
+    	    TextView textView = (TextView) rowView.findViewById(R.id.distance);
     	    try {
-				textView1.setText(result.getJSONObject(position).getString("image"));
-				textView2.setText(result.getJSONObject(position).getString("distance"));
+    	    	String url = "http://128.61.107.111:56788/media/" + result.getJSONObject(position).getString("image");
+    	    	imageLoader.DisplayImage(url, imageView);
+    	    	textView.setText(result.getJSONObject(position).getString("image_text"));
+    	    	textView.setText(result.getJSONObject(position).getString("distance"));
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
