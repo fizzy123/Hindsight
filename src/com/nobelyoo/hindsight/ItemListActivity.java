@@ -37,6 +37,7 @@ import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
@@ -73,17 +74,28 @@ public class ItemListActivity extends Activity {
 		listView.setAdapter(adapter);
 		activity = this;
 		imageLoader = new ImageLoader(this);
-		new LoadMemoriesTask().execute();
 		
 		// Acquire a reference to the system Location Manager
-		//locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+		locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
-		// Request location updates from GPS and NETWORK
-		//locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
-		//locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+		//Request location updates from GPS and NETWORK
+		locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
 		
 		// Start task that regularly checks location to see if it should update
-		//locationHandler.postDelayed(locationRunnable, 0);
+		locationHandler.postDelayed(locationRunnable, 0);
+		/*
+	    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+	        @Override
+	        public void onItemClick(AdapterView<?> parent, final View view,
+	        		int position, long id) {
+	        	Intent intent = new Intent(getBaseContext(), ItemDetailActivity.class);
+	        	
+	    		startActivity(intent);
+	        }
+
+	    });*/
 	}
 	
 	@Override
@@ -103,7 +115,7 @@ public class ItemListActivity extends Activity {
 	    	  locationManager.removeUpdates(locationListener);
 	    	  runOnUiThread(new Runnable() {
 	    		  public void run() { 
-	    			  //new LoadMemoriesTask().execute();
+	    			  new LoadMemoriesTask().execute();
 		          }
 			  });
 	      }
@@ -189,7 +201,7 @@ public class ItemListActivity extends Activity {
 			locationManager.removeUpdates(locationListener);
 			runOnUiThread(new Runnable() {
 				public void run() { 
-					//new LoadMemoriesTask().execute();
+					new LoadMemoriesTask().execute();
 	            }
 		    });
 			locationHandler.postDelayed(locationRunnable, 30000);
@@ -218,10 +230,10 @@ public class ItemListActivity extends Activity {
 			try {
 				// Create a new HttpClient and build GET request
 				HttpClient httpClient = new DefaultHttpClient();
-				HttpGet httpGet = new HttpGet("http://128.61.107.111:56788/memories/view_near/?latitude=33.775422&longitude=-84.3910626"); 
-				//+ 
-				//"?latitude=" + Double.toString(currentLocation.getLatitude()) + 
-				//"&longitude=" + Double.toString(currentLocation.getLongitude()));
+				HttpGet httpGet = new HttpGet("http://128.61.107.111:56788/memories/view_near/"
+				+ 
+				"?latitude=" + Double.toString(currentLocation.getLatitude()) + 
+				"&longitude=" + Double.toString(currentLocation.getLongitude()));
 				// check session id for user
 				// Get saved preferences for current user
 				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
