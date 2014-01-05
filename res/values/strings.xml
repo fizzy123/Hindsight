@@ -7,5 +7,14 @@
     <string name="title_item_detail">Item Detail</string>
     <string name="loading">Loading&#8230;</string>
     <string name="info">Seon Woo Yoo and Matthew Compton</string>
+    <string name="camera">camera</string>
+    <string name="title_activity_camera">CameraActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="upload">Upload</string>
+    <string name="camera_preview_desc">will vary; image taken from camera</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_upload">UploadActivity</string>
 
 </resources>

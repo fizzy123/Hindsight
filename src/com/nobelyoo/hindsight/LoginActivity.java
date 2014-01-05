@@ -1,5 +1,6 @@
 package com.nobelyoo.hindsight;
 
+import java.io.Console;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -224,7 +225,7 @@ public class LoginActivity extends Activity {
 	public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 		
 		private HttpResponse response = null;
-		
+		private HttpResponse newResponse = null;
 		@Override
 		protected Boolean doInBackground(Void... params) {
 

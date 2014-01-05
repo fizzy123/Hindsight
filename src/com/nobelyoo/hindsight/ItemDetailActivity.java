@@ -1,10 +1,28 @@
 package com.nobelyoo.hindsight;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.NavUtils;
 import android.view.MenuItem;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
 
 /**
  * An activity representing a single Item detail screen. This
@@ -20,44 +38,85 @@ public class ItemDetailActivity extends FragmentActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_item_detail);
-
+		new LoadMemoryTask().execute();
 		// Show the Up button in the action bar.
-		getActionBar().setDisplayHomeAsUpEnabled(true);
+		//getActionBar().setDisplayHomeAsUpEnabled(true);		
+	}
+	
+	/**
+	 * Loads data in separate thread
+	 */
+	private class LoadMemoryTask extends AsyncTask<Void, Void, Boolean> {
+	    
+		private JSONObject result;
+		protected Boolean doInBackground(Void... args) {
+			Intent intent = getIntent();
+			try {
+				// Create a new HttpClient and build GET request
+				HttpClient httpClient = new DefaultHttpClient();
+				HttpGet httpGet = new HttpGet("http://128.61.107.111:56788/memories/view_specific/" +
+						intent.getStringExtra(ItemListActivity.MEMORY_ID) +
+				"?latitude=" + intent.getStringExtra(ItemListActivity.LATITUDE) + 
+				"&longitude=" + intent.getStringExtra(ItemListActivity.LONGITUDE));
+				// check session id for user
+				// Get saved preferences for current user
+				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+				String sessionid = prefs.getString("sessionid", null);
+				httpGet.setHeader("sessionid", sessionid);
+				
+				HttpResponse response = httpClient.execute(httpGet);
+				JSONObject json = new JSONObject(convertStreamToString(response.getEntity().getContent()));
+				result = json.getJSONObject("memory");
+				return true;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return false;
+		}
 
-		// savedInstanceState is non-null when there is fragment state
-		// saved from previous configurations of this activity
-		// (e.g. when rotating the screen from portrait to landscape).
-		// In this case, the fragment will automatically be re-added
-		// to its container so we don't need to manually add it.
-		// For more information, see the Fragments API guide at:
-		//
-		// http://developer.android.com/guide/components/fragments.html
-		//
-		if (savedInstanceState == null) {
-			// Create the detail fragment and add it to the activity
-			// using a fragment transaction.
-			Bundle arguments = new Bundle();
-			arguments.putString(ItemDetailFragment.ARG_ITEM_ID, getIntent().getStringExtra(ItemDetailFragment.ARG_ITEM_ID));
-			ItemDetailFragment fragment = new ItemDetailFragment();
-			fragment.setArguments(arguments);
-			getSupportFragmentManager().beginTransaction().add(R.id.item_detail_container, fragment).commit();
+		/*
+		 * Populate view
+		 */
+		protected void onPostExecute(Boolean success) {
+			// If successful, populate view
+			if (success) {
+				ImageView imageView = (ImageView) findViewById(R.id.image);
+	    	    TextView distanceTextView = (TextView) findViewById(R.id.distance);
+	    	    TextView captionTextView = (TextView) findViewById(R.id.caption);
+	    	    
+	    	    try {
+	    	    	String url = "http://128.61.107.111:56788/media/" + result.getString("image");
+		    	    
+					ItemListActivity.imageLoader.DisplayImage(url, imageView);
+	    	    	distanceTextView.setText(result.getString("image_text"));
+	    	    	captionTextView.setText(result.getString("distance"));
+	    	    } catch (Exception e) {
+	    	    	e.printStackTrace();
+	    	    }
+			}
 		}
 	}
+	
+	// Converts Stream to String
+		private static String convertStreamToString(InputStream is) {
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case android.R.id.home:
-			// This ID represents the Home or Up button. In the case of this
-			// activity, the Up button is shown. Use NavUtils to allow users
-			// to navigate up one level in the application structure. For
-			// more details, see the Navigation pattern on Android Design:
-			//
-			// http://developer.android.com/design/patterns/navigation.html#up-vs-back
-			//
-			NavUtils.navigateUpTo(this, new Intent(this, ItemListActivity.class));
-			return true;
+		    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+		    StringBuilder sb = new StringBuilder();
+
+		    String line = null;
+		    try {
+		        while ((line = reader.readLine()) != null) {
+		            sb.append(line + "\n");
+		        }
+		    } catch (IOException e) {
+		        e.printStackTrace();
+		    } finally {
+		        try {
+		            is.close();
+		        } catch (IOException e) {
+		            e.printStackTrace();
+		        }
+		    }
+		    return sb.toString();
 		}
-		return super.onOptionsItemSelected(item);
-	}
 }

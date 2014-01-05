@@ -4,10 +4,10 @@
     <!-- Gradient Colors -->
     <color name="gradient_start">#a6e2f9</color>
     <color name="gradient_end">#176685</color>
-    
+
     <!-- Translucent Color -->
     <color name="black_translucent">#44000000</color>
-    
+
     <!-- Standard Colors -->
     <color name="white">#FFFFFF</color>
     <color name="yellow">#FFFF00</color>
@@ -25,5 +25,6 @@
     <color name="blue">#0000FF</color>
     <color name="navy">#000080</color>
     <color name="black">#000000</color>
+    <color name="black_overlay">#66000000</color>
 
 </resources>

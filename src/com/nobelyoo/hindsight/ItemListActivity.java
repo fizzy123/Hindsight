@@ -57,13 +57,15 @@ import android.widget.TextView;
  * This activity also implements the required {@link ItemListFragment.Callbacks} interface to listen for item selections.
  */
 public class ItemListActivity extends Activity {
-
+	public final static String MEMORY_ID = "com.nobelyoo.hindsight.ID";
+	public final static String LATITUDE = "com.nobelyoo.hindsight.LATITUDE";
+	public final static String LONGITUDE = "com.nobelyoo.hindsight.LONGITUDE";
     private JSONArray result = null;
 
 	private ItemListActivity activity;
 	private ListView listView;
 	private JSONAdapter adapter;
-	private ImageLoader imageLoader;
+	public static ImageLoader imageLoader;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -84,18 +86,25 @@ public class ItemListActivity extends Activity {
 		
 		// Start task that regularly checks location to see if it should update
 		locationHandler.postDelayed(locationRunnable, 0);
-		/*
+		
 	    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
 	        @Override
 	        public void onItemClick(AdapterView<?> parent, final View view,
 	        		int position, long id) {
-	        	Intent intent = new Intent(getBaseContext(), ItemDetailActivity.class);
-	        	
-	    		startActivity(intent);
+	        	Intent intent = new Intent(ItemListActivity.this, ItemDetailActivity.class);
+	        	try {
+					intent.putExtra(MEMORY_ID, String.valueOf(result.getJSONObject(position).getInt("id")));
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+	        	intent.putExtra(LATITUDE, String.valueOf(currentLocation.getLatitude()));
+	        	intent.putExtra(LONGITUDE, String.valueOf(currentLocation.getLongitude()));
+	        	startActivity(intent);
 	        }
-
-	    });*/
+	    });
+	    
+	    
 	}
 	
 	@Override
@@ -104,6 +113,13 @@ public class ItemListActivity extends Activity {
 		
 		// Remove location checking tasks
 		locationHandler.removeCallbacks(locationRunnable);
+	}
+	
+	public void startCamera(View view) {
+		Intent intent = new Intent(ItemListActivity.this, UploadActivity.class);
+		intent.putExtra(LATITUDE, String.valueOf(currentLocation.getLatitude()));
+    	intent.putExtra(LONGITUDE, String.valueOf(currentLocation.getLongitude()));
+		startActivity(intent);
 	}
 	
 	private Location currentLocation = null;
@@ -259,6 +275,7 @@ public class ItemListActivity extends Activity {
 				//test = adapter.getCount();
 				// I think this is a bad way of doing it, but I don't know how to get notifyDataSetChanged to work
 				listView.setAdapter(new JSONAdapter(activity));
+				
 			}
 		}
 	}
