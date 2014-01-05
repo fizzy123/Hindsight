@@ -16,7 +16,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -35,7 +34,6 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 /**
  * Activity which displays a login screen to the user, offering registration as
@@ -107,15 +105,6 @@ public class LoginActivity extends Activity {
 			}
 		});
 
-	}
-
-	/*
-	 * Goes to the register screen
-	 */
-	private void goRegister() {
-		Intent intent = new Intent(getBaseContext(), RegisterActivity.class);
-		startActivity(intent);
-		finish();
 	}
 
 	/**
@@ -218,6 +207,15 @@ public class LoginActivity extends Activity {
 		finish();
 	}
 	
+	/*
+	 * Goes to the register screen
+	 */
+	private void goRegister() {
+		Intent intent = new Intent(getBaseContext(), RegisterActivity.class);
+		startActivity(intent);
+		finish();
+	}
+	
 	/**
 	 * Represents an asynchronous login/registration task used to authenticate
 	 * the user.
@@ -273,11 +271,12 @@ public class LoginActivity extends Activity {
 			mAuthTask = null;
 			showProgress(false);
 
-			//Grabs status code and session_id
+			// Grabs status code and session_id
 			int result = response.getStatusLine().getStatusCode();
 			
 			// If everything is successful
 			if (success && (result == 200)) {
+				
 				// Get sessionid from headers
 				Header[] headers = response.getHeaders("Set-Cookie");
 				String sessionid = "";
@@ -296,12 +295,12 @@ public class LoginActivity extends Activity {
 				edit.apply();
 				//Go to home screen
 				goHome();
-				finish();
 			} else {
 				// Assumes that password was incorrect, but is probably not safe assumption to make
 				mPasswordView.setError(getString(R.string.error_incorrect_password));
 				mPasswordView.requestFocus();
 			}
+			
 		}
 
 		@Override
@@ -309,5 +308,7 @@ public class LoginActivity extends Activity {
 			mAuthTask = null;
 			showProgress(false);
 		}
-	}
-}
+		
+	} // end inner class
+	
+} // end class
