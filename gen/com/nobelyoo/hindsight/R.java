@@ -64,17 +64,15 @@ public final class R {
     public static final class drawable {
         public static final int gradient_background=0x7f020000;
         public static final int ic_launcher=0x7f020001;
-        public static final int stub=0x7f020002;
     }
     public static final class id {
         public static final int RelativeLayoutMain=0x7f0a0002;
-        public static final int distance=0x7f0a0013;
+        public static final int distance=0x7f0a0012;
         public static final int email=0x7f0a000a;
-        public static final int image=0x7f0a0011;
-        public static final int image_text=0x7f0a0012;
-        public static final int item_detail=0x7f0a0010;
-        public static final int item_detail_container=0x7f0a0000;
-        public static final int item_list=0x7f0a0001;
+        public static final int image=0x7f0a0010;
+        public static final int image_text=0x7f0a0011;
+        public static final int item_detail_container=0x7f0a0001;
+        public static final int item_list=0x7f0a0000;
         public static final int login=0x7f0a000c;
         public static final int login_form=0x7f0a0009;
         public static final int login_status=0x7f0a0007;
@@ -89,7 +87,6 @@ public final class R {
         public static final int textViewTitle=0x7f0a0004;
     }
     public static final class layout {
-        public static final int activity_item_detail=0x7f030000;
         /** 
     Layout alias to replace the single-pane version of the layout with a
     two-pane version on Large screens.
@@ -105,13 +102,12 @@ public final class R {
     http://developer.android.com/training/multiscreen/screensizes.html#TaskUseAliasFilters
     
          */
-        public static final int activity_item_list=0x7f030001;
-        public static final int activity_item_twopane=0x7f030002;
-        public static final int activity_load=0x7f030003;
-        public static final int activity_login=0x7f030004;
-        public static final int activity_register=0x7f030005;
-        public static final int fragment_item_detail=0x7f030006;
-        public static final int list_item=0x7f030007;
+        public static final int activity_item_list=0x7f030000;
+        public static final int activity_item_twopane=0x7f030001;
+        public static final int activity_load=0x7f030002;
+        public static final int activity_login=0x7f030003;
+        public static final int activity_register=0x7f030004;
+        public static final int list_item=0x7f030005;
     }
     public static final class string {
         public static final int action_forgot_password=0x7f07000d;

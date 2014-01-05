@@ -15,19 +15,15 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.util.EntityUtils;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -260,14 +256,12 @@ public class RegisterActivity extends Activity {
 				
 				// Executes POST request
 				response = httpClient.execute(httpPost);
-
 				return true;
 			} catch (ClientProtocolException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
 			return false;
 		}
 
@@ -281,7 +275,6 @@ public class RegisterActivity extends Activity {
 			// If server returns successful, go to home screen.
 			if (result == 200) {
 				goHome();
-				finish();
 			} else {
 				Toast.makeText(getApplicationContext(), "Registration Failed", Toast.LENGTH_LONG).show();
 				mPasswordView.requestFocus();
@@ -293,5 +286,7 @@ public class RegisterActivity extends Activity {
 			mAuthTask = null;
 			showProgress(false);
 		}
-	}
-}
+		
+	} // end inner class
+	
+} // end class
