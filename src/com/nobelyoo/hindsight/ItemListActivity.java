@@ -33,6 +33,7 @@ import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.technotalkative.loadwebimage.ImageLoader;
 
@@ -237,9 +238,9 @@ public class ItemListActivity extends Activity {
 	/**
 	 * Loads data in separate thread
 	 */
-	private class LoadMemoriesTask extends AsyncTask<Void, Void, Boolean> {
+	private class LoadMemoriesTask extends AsyncTask<Void, Void, HttpResponse> {
 
-		protected Boolean doInBackground(Void... args) {
+		protected HttpResponse doInBackground(Void... args) {
 			try {
 				// Create a new HttpClient and build GET request
 				HttpClient httpClient = new DefaultHttpClient();
@@ -252,27 +253,36 @@ public class ItemListActivity extends Activity {
 				String sessionid = prefs.getString("sessionid", null);
 				httpGet.setHeader("sessionid", sessionid);
 
-				// Get JSON array
-				HttpResponse response = httpClient.execute(httpGet);
-				JSONObject json = new JSONObject(convertStreamToString(response.getEntity().getContent()));
-				result = json.getJSONArray("memories");
-				return true;
+				return httpClient.execute(httpGet);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			return false;
+			return null;
 		}
 
 		/*
 		 * Populate list view
 		 */
-		protected void onPostExecute(Boolean success) {
+		protected void onPostExecute(HttpResponse response) {
+			// Get JSON array
+			JSONObject json;
+			try {
+				json = new JSONObject(convertStreamToString(response.getEntity().getContent()));
+				result = json.getJSONArray("memories");
+			} catch (IllegalStateException e) {
+				e.printStackTrace();
+			} catch (JSONException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			// If successful, refresh list view
-			if (success == true) {
+			if (response.getStatusLine().getStatusCode() == 200) {
 				// test = adapter.getCount();
 				// I think this is a bad way of doing it, but I don't know how to get notifyDataSetChanged to work
 				listView.setAdapter(new JSONAdapter(activity));
-				
+			} else {
+				Toast.makeText(getBaseContext(), "There has been an internal server error", Toast.LENGTH_LONG).show();
 			}
 		}
 	}

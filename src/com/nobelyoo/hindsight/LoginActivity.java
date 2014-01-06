@@ -34,6 +34,7 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Activity which displays a login screen to the user, offering registration as
@@ -220,12 +221,10 @@ public class LoginActivity extends Activity {
 	 * Represents an asynchronous login/registration task used to authenticate
 	 * the user.
 	 */
-	public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+	public class UserLoginTask extends AsyncTask<Void, Void, HttpResponse> {
 		
-		private HttpResponse response = null;
-		private HttpResponse newResponse = null;
 		@Override
-		protected Boolean doInBackground(Void... params) {
+		protected HttpResponse doInBackground(Void... params) {
 
 			try {
 				// Connect to the server and try to login
@@ -253,9 +252,7 @@ public class LoginActivity extends Activity {
 				httpPost.setEntity(new UrlEncodedFormEntity(context, "UTF-8"));
 				
 				//Execute POST Request
-				response = httpClient.execute(httpPost);
-				
-				return true;
+				return httpClient.execute(httpPost);
 
 			} catch (ClientProtocolException e) {
 				e.printStackTrace();
@@ -263,11 +260,11 @@ public class LoginActivity extends Activity {
 				e.printStackTrace();
 			}
 
-			return false;
+			return null;
 		}
 
 		@Override
-		protected void onPostExecute(final Boolean success) {
+		protected void onPostExecute(final HttpResponse response ) {
 			mAuthTask = null;
 			showProgress(false);
 
@@ -275,8 +272,7 @@ public class LoginActivity extends Activity {
 			int result = response.getStatusLine().getStatusCode();
 			
 			// If everything is successful
-			if (success && (result == 200)) {
-				
+			if (result == 200) {
 				// Get sessionid from headers
 				Header[] headers = response.getHeaders("Set-Cookie");
 				String sessionid = "";
@@ -295,12 +291,12 @@ public class LoginActivity extends Activity {
 				edit.apply();
 				//Go to home screen
 				goHome();
-			} else {
+			} else if (result == 403){
 				// Assumes that password was incorrect, but is probably not safe assumption to make
-				mPasswordView.setError(getString(R.string.error_incorrect_password));
-				mPasswordView.requestFocus();
-			}
-			
+				Toast.makeText(getBaseContext(), "No account with that username and password has been found", Toast.LENGTH_LONG).show();
+			} else {
+				Toast.makeText(getBaseContext(), "There has been an internal server error", Toast.LENGTH_LONG).show();
+			}	
 		}
 
 		@Override

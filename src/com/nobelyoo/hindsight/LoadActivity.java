@@ -79,11 +79,9 @@ public class LoadActivity extends Activity {
 	/*
 	 * Loads data in separate thread
 	 */
-	private class LoadDataTask extends AsyncTask<String, Void, Object> {
+	private class LoadDataTask extends AsyncTask<String, Void, HttpResponse> {
 
-		private int result = 0;
-
-		protected Object doInBackground(String... args) {
+		protected HttpResponse doInBackground(String... args) {
 			try {
 				// Create a new HttpClient
 				HttpClient httpClient = new DefaultHttpClient();
@@ -134,30 +132,35 @@ public class LoadActivity extends Activity {
 				httpPost.setHeader("X-CSRFToken", CSRFTOKEN);
 				
 				// Execute HTTP Post Request
-				HttpResponse response = httpClient.execute(httpPost, localContext);
-				result = response.getStatusLine().getStatusCode();
-				return true;
+				httpClient.execute(httpPost, localContext); 
+				return httpClient.execute(httpPost, localContext); 
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			return false;
+			return null;
 		}
 
 		/*
 		 * Pass the result data back to the main activity
 		 */
-		protected void onPostExecute(Object result) {
-			sendOnwards();
+		protected void onPostExecute(final HttpResponse result) {
+			if (result != null) {
+				sendOnwards(result.getStatusLine().getStatusCode());
+			} else {
+				//Throw error
+			}
 		}
 
 		/*
 		 * Send to the next activity
 		 */
-		private void sendOnwards() {
+		private void sendOnwards(int result) {
 			if (result == 200) {
 				// Has connection and credentials
 				goHome();
-			} else {
+			} else if (result == 500) {
+				Toast.makeText(getBaseContext(), "Internal Server Error. Please try again later", Toast.LENGTH_LONG).show();
+			} else
 				// Needs to login
 				goLogin();
 			}

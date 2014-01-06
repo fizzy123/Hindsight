@@ -136,11 +136,11 @@ public class UploadActivity extends Activity {
 	/**
 	 * Uploads memory data in separate thread
 	 */
-	private class UploadMemoryTask extends AsyncTask<Void, Void, Boolean> {
+	private class UploadMemoryTask extends AsyncTask<Void, Void, HttpResponse> {
 	    
 		private int result = 0;
 		
-		protected Boolean doInBackground(Void... args) {
+		protected HttpResponse doInBackground(Void... args) {
 			Intent intent = getIntent();
 			
 			try {
@@ -211,28 +211,24 @@ public class UploadActivity extends Activity {
 			    
 			    // execute post request
 			    System.out.println("executing request " + httpPost.getRequestLine());
-			    HttpResponse response = httpClient.execute(httpPost, localContext);
-			    result = response.getStatusLine().getStatusCode();
-				return true;
+				return httpClient.execute(httpPost, localContext);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			return false;
+			return null;
 		}
 
 		/*
 		 * Populate view
 		 */
-		protected void onPostExecute(Boolean success) {
+		protected void onPostExecute(HttpResponse response) {
 			// If successful, populate view
-			if (success) {
-				if (result == 200) {
-					Intent intent = new Intent(getBaseContext(), ItemListActivity.class);
-					startActivity(intent);
-					finish();
-				} else {
-					
-				}
+			if (response.getStatusLine().getStatusCode() == 200) {
+				Intent intent = new Intent(getBaseContext(), ItemListActivity.class);
+				startActivity(intent);
+				finish();
+			} else {
+				Toast.makeText(getBaseContext(), "There has been an internal server error", Toast.LENGTH_LONG).show();
 			}
 		}
 	}

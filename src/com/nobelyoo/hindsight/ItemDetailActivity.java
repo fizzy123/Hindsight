@@ -10,6 +10,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Intent;
@@ -23,6 +24,7 @@ import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * An activity representing a single Item detail screen. This
@@ -48,10 +50,10 @@ public class ItemDetailActivity extends FragmentActivity {
 	/**
 	 * Loads data in separate thread
 	 */
-	private class LoadMemoryTask extends AsyncTask<Void, Void, Boolean> {
+	private class LoadMemoryTask extends AsyncTask<Void, Void, HttpResponse> {
 	    
 		private JSONObject result;
-		protected Boolean doInBackground(Void... args) {
+		protected HttpResponse doInBackground(Void... args) {
 			Intent intent = getIntent();
 			try {
 				// Create a new HttpClient and build GET request
@@ -66,22 +68,32 @@ public class ItemDetailActivity extends FragmentActivity {
 				String sessionid = prefs.getString("sessionid", null);
 				httpGet.setHeader("sessionid", sessionid);
 				
-				HttpResponse response = httpClient.execute(httpGet);
-				JSONObject json = new JSONObject(convertStreamToString(response.getEntity().getContent()));
-				result = json.getJSONObject("memory");
-				return true;
+				// Execute GET request
+				return httpClient.execute(httpGet);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			return false;
+			return null;
 		}
 
 		/*
 		 * Populate view
 		 */
-		protected void onPostExecute(Boolean success) {
+		protected void onPostExecute(HttpResponse response) {
+			// get JSON Object
+			JSONObject json;
+			try {
+				json = new JSONObject(convertStreamToString(response.getEntity().getContent()));
+				result = json.getJSONObject("memory");
+			} catch (IllegalStateException e1) {
+				e1.printStackTrace();
+			} catch (JSONException e1) {
+				e1.printStackTrace();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
 			// If successful, populate view
-			if (success) {
+			if (response.getStatusLine().getStatusCode() == 200) {
 				ImageView imageView = (ImageView) findViewById(R.id.image);
 	    	    TextView distanceTextView = (TextView) findViewById(R.id.distance);
 	    	    TextView captionTextView = (TextView) findViewById(R.id.caption);
@@ -95,6 +107,8 @@ public class ItemDetailActivity extends FragmentActivity {
 	    	    } catch (Exception e) {
 	    	    	e.printStackTrace();
 	    	    }
+			} else {
+				Toast.makeText(getBaseContext(), "There has been an internal server error", Toast.LENGTH_LONG).show();
 			}
 		}
 	}
