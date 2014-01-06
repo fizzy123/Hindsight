@@ -190,8 +190,7 @@ public class UploadActivity extends Activity {
 			    // Set up Post Request
 			    HttpPost httpPost = new HttpPost("http://128.61.107.111:56788/memories/add/");
 			    
-			    // Not sure if still necessary when using CookieStore, but probably doesn't hurt. I'll test if I can remove this later
-			    httpPost.setHeader("sessionid", sessionid); 
+			    // Adds CSRF Token
 				httpPost.setHeader("X-CSRFToken", CSRFTOKEN);
 				
 				// Add file and text arguments to multipart entity

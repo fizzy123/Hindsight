@@ -3,10 +3,16 @@ package com.nobelyoo.hindsight;
 import org.apache.http.Header;
 import org.apache.http.HeaderElement;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
 
 import android.app.Activity;
 import android.content.Context;
@@ -99,12 +105,36 @@ public class LoadActivity extends Activity {
 				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 				String sessionid = prefs.getString("sessionid", null);
 				
+				// Create CookieStore
+				CookieStore cookieStore = new BasicCookieStore();
+				
+				// Set up cookie for sessionid
+				BasicClientCookie cookie = new BasicClientCookie("sessionid", sessionid);
+				cookie.setVersion(0);
+				cookie.setDomain("128.61.107.111");
+				cookie.setPath("/");
+				cookieStore.addCookie(cookie);
+				
+				// Set up cookie for csrftoken
+				cookie = new BasicClientCookie("csrftoken", CSRFTOKEN);
+				cookie.setVersion(0);
+				cookie.setDomain("128.61.107.111");
+				cookie.setPath("/");
+				cookieStore.addCookie(cookie);
+				
+				// Create local HTTP context
+			    HttpContext localContext = new BasicHttpContext();
+			    // Bind custom cookie store to the local context
+			    localContext.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
+				
 				// Verify if user has a valid session id
 				HttpPost httpPost = new HttpPost("http://128.61.107.111:56788/users/verify/");
-				httpPost.setHeader("sessionid", sessionid);
+				
+				// Set CSRF Header
 				httpPost.setHeader("X-CSRFToken", CSRFTOKEN);
+				
 				// Execute HTTP Post Request
-				HttpResponse response = httpClient.execute(httpPost);
+				HttpResponse response = httpClient.execute(httpPost, localContext);
 				result = response.getStatusLine().getStatusCode();
 				return true;
 			} catch (Exception e) {
