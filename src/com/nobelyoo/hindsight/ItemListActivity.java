@@ -81,8 +81,8 @@ public class ItemListActivity extends Activity {
 		// Start task that regularly checks location to see if it should update
 		locationHandler.postDelayed(locationRunnable, 0);
 		
+		// Set listener for whenever an item is clicked
 	    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
 	        @Override
 	        public void onItemClick(AdapterView<?> parent, final View view,
 	        		int position, long id) {
@@ -106,6 +106,7 @@ public class ItemListActivity extends Activity {
 		locationHandler.removeCallbacks(locationRunnable);
 	}
 	
+	// When someone presses the camera button, go to the Camera activity
 	public void startCamera(View view) {
 		Intent intent = new Intent(ItemListActivity.this, UploadActivity.class);
 		intent.putExtra(LATITUDE, String.valueOf(currentLocation.getLatitude()));
@@ -327,12 +328,16 @@ public class ItemListActivity extends Activity {
 			return jsonObject.optLong("id");
 		}
 
+		// This is the function that actually re-sets the view items.
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
+			// Get Views
 			LayoutInflater inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			View rowView = inflater.inflate(R.layout.list_item, parent, false);
 			ImageView imageView = (ImageView) rowView.findViewById(R.id.image);
 			TextView textView = (TextView) rowView.findViewById(R.id.distance);
+			
+			//  Set Text values in the view from json result
 			try {
 				String url = "http://128.61.107.111:56788/media/" + result.getJSONObject(position).getString("image");
 				imageLoader.DisplayImage(url, imageView);

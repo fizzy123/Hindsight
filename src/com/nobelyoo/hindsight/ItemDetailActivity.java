@@ -38,7 +38,9 @@ public class ItemDetailActivity extends FragmentActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_item_detail);
+		// Start new thread
 		new LoadMemoryTask().execute();
+		// I don't know what this does. It just is in here by default.
 		// Show the Up button in the action bar.
 		//getActionBar().setDisplayHomeAsUpEnabled(true);		
 	}

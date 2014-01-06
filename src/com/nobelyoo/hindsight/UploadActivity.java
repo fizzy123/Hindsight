@@ -9,7 +9,6 @@ import org.apache.http.Header;
 import org.apache.http.HeaderElement;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.HttpVersion;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -19,15 +18,10 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.ContentBody;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.cookie.BasicClientCookie;
-import org.apache.http.params.CoreProtocolPNames;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
-import org.apache.http.util.EntityUtils;
-import org.json.JSONObject;
 
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -44,12 +38,10 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 public class UploadActivity extends Activity {
@@ -58,23 +50,24 @@ public class UploadActivity extends Activity {
 	private static final int CAPTURE_IMAGE_ACTIVITY_REQ = 0;		  
 	Uri fileUri = null;
 	ImageView photoImage = null;
-	private Intent intent;
 	private EditText mCaptionView;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_upload);
+		
+		// Grab views
 		photoImage = (ImageView) findViewById(R.id.photo_image);
 		mCaptionView = (EditText) findViewById(R.id.caption);
 
-		intent = getIntent();
+		// Start Camera Activity
 		Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        File file = getOutputPhotoFile();
         fileUri = Uri.fromFile(getOutputPhotoFile());
         i.putExtra(MediaStore.EXTRA_OUTPUT, fileUri);
         startActivityForResult(i, CAPTURE_IMAGE_ACTIVITY_REQ );
         
+        // Set listener for upload button
 		Button callCameraButton = (Button) findViewById(R.id.button_upload);
 		callCameraButton.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {
@@ -83,6 +76,7 @@ public class UploadActivity extends Activity {
 		});
 	}
 	
+	// Grab space and name to save photo.
 	private File getOutputPhotoFile() {
 		  File directory = new File(Environment.getExternalStoragePublicDirectory(
 		                Environment.DIRECTORY_PICTURES), getPackageName());
@@ -92,17 +86,19 @@ public class UploadActivity extends Activity {
 		      return null;
 		    }
 		  }
+		  // Grab timeStamp and name file based on timeStamp
 		  String timeStamp = new SimpleDateFormat("yyyMMdd_HHmmss", Locale.US).format(new Date());
 		  return new File(directory.getPath() + File.separator + "IMG_"  
 		                    + timeStamp + ".jpg");
 		}
 	
+	// Runs when camera activity returns.
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		  if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQ) {
 		    if (resultCode == RESULT_OK) {
 		      Uri photoUri = null;
 		      if (data == null) {
-		        // A known bug here! The image should have saved in fileUri
+		        // A known bug with certain phones here! The image should have saved in fileUri
 		        Toast.makeText(this, "Image saved successfully", 
 		                       Toast.LENGTH_LONG).show();
 		        photoUri = fileUri;
@@ -122,6 +118,7 @@ public class UploadActivity extends Activity {
 		  }
 		}
 	
+	// Set photoImage Drawable to the picture that was just taken. 
 	private void showPhoto(Uri photoUri) {
 		String filePath = photoUri.getEncodedPath(); 
 		File imageFile = new File(filePath);
@@ -137,18 +134,18 @@ public class UploadActivity extends Activity {
 		}
 	
 	/**
-	 * Uploads data in separate thread
+	 * Uploads memory data in separate thread
 	 */
 	private class UploadMemoryTask extends AsyncTask<Void, Void, Boolean> {
 	    
 		private int result = 0;
 		
 		protected Boolean doInBackground(Void... args) {
+			Intent intent = getIntent();
+			
 			try {
 				// Create a new HttpClient
-				
 				HttpClient httpClient = new DefaultHttpClient();
-			    //httpClient.getParams().setParameter(CoreProtocolPNames.PROTOCOL_VERSION, HttpVersion.HTTP_1_1);
 				
 				// Get CSRF token
 				HttpGet httpGet = new HttpGet("http://128.61.107.111:56788/users/provide_csrf/");
@@ -162,44 +159,58 @@ public class UploadActivity extends Activity {
 						}
 					}
 				}
+				
 				// check session id for user
 				// Get saved preferences for current user
 				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 				String sessionid = prefs.getString("sessionid", null);
 				
+				// Create CookieStore
 				CookieStore cookieStore = new BasicCookieStore();
+				
+				// Set up cookie for sessionid
 				BasicClientCookie cookie = new BasicClientCookie("sessionid", sessionid);
 				cookie.setVersion(0);
 				cookie.setDomain("128.61.107.111");
 				cookie.setPath("/");
 				cookieStore.addCookie(cookie);
+				
+				// Set up cookie for csrftoken
 				cookie = new BasicClientCookie("csrftoken", CSRFTOKEN);
 				cookie.setVersion(0);
 				cookie.setDomain("128.61.107.111");
 				cookie.setPath("/");
 				cookieStore.addCookie(cookie);
+				
 				// Create local HTTP context
 			    HttpContext localContext = new BasicHttpContext();
 			    // Bind custom cookie store to the local context
 			    localContext.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
 				
+			    // Set up Post Request
 			    HttpPost httpPost = new HttpPost("http://128.61.107.111:56788/memories/add/");
-			    httpPost.setHeader("sessionid", sessionid);
+			    
+			    // Not sure if still necessary when using CookieStore, but probably doesn't hurt. I'll test if I can remove this later
+			    httpPost.setHeader("sessionid", sessionid); 
 				httpPost.setHeader("X-CSRFToken", CSRFTOKEN);
+				
+				// Add file and text arguments to multipart entity
 			    File file = new File(fileUri.getEncodedPath());
 			    MultipartEntityBuilder mpEntityBuilder = MultipartEntityBuilder.create();  
 			    ContentBody cbFile = new FileBody(file);
 			    mpEntityBuilder.addPart("memory", cbFile); 
 			    mpEntityBuilder.addTextBody("longitude", intent.getStringExtra(ItemListActivity.LONGITUDE));
 			    mpEntityBuilder.addTextBody("latitude", intent.getStringExtra(ItemListActivity.LATITUDE));
-			    
 			    String caption = mCaptionView.getText().toString();
 			    if (TextUtils.isEmpty(caption)) {
 				    mpEntityBuilder.addTextBody("caption", caption);
 			    }
 			    
+			    // Build entity and add to Post Request
 			    final HttpEntity mpEntity = mpEntityBuilder.build();
 			    httpPost.setEntity(mpEntity);
+			    
+			    // execute post request
 			    System.out.println("executing request " + httpPost.getRequestLine());
 			    HttpResponse response = httpClient.execute(httpPost, localContext);
 			    result = response.getStatusLine().getStatusCode();
