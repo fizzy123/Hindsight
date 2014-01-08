@@ -79,9 +79,9 @@ public class LoadActivity extends Activity {
 	/*
 	 * Loads data in separate thread
 	 */
-	private class LoadDataTask extends AsyncTask<String, Void, HttpResponse> {
+	private class LoadDataTask extends AsyncTask<String, Void, String> {
 
-		protected HttpResponse doInBackground(String... args) {
+		protected String doInBackground(String... args) {
 			try {
 				// Create a new HttpClient
 				HttpClient httpClient = new DefaultHttpClient();
@@ -132,8 +132,15 @@ public class LoadActivity extends Activity {
 				httpPost.setHeader("X-CSRFToken", CSRFTOKEN);
 				
 				// Execute HTTP Post Request
-				httpClient.execute(httpPost, localContext); 
-				return httpClient.execute(httpPost, localContext); 
+				HttpResponse response = httpClient.execute(httpPost, localContext); 
+				int status = response.getStatusLine().getStatusCode();
+				if (status == 200) {
+					return "SUCCESS";
+				} else if (status == 500) {
+					return "SERVER_ERROR";
+				} else {
+					return null;
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -143,29 +150,25 @@ public class LoadActivity extends Activity {
 		/*
 		 * Pass the result data back to the main activity
 		 */
-		protected void onPostExecute(final HttpResponse result) {
-			if (result != null) {
-				sendOnwards(result.getStatusLine().getStatusCode());
+		protected void onPostExecute(final String status) {
+			if (status.equals("SERVER_ERROR")) {
+				Toast.makeText(getBaseContext(), "Internal Server Error. Please try again later", Toast.LENGTH_LONG).show();
 			} else {
-				//Throw error
+				sendOnwards(status);
 			}
 		}
 
 		/*
 		 * Send to the next activity
 		 */
-		private void sendOnwards(int result) {
-			if (result == 200) {
+		private void sendOnwards(final String result) {
+			if (result.equals("SUCCESS")) {
 				// Has connection and credentials
 				goHome();
-			} else if (result == 500) {
-				Toast.makeText(getBaseContext(), "Internal Server Error. Please try again later", Toast.LENGTH_LONG).show();
-			} else
+			} else {
 				// Needs to login
 				goLogin();
 			}
 		}
-
 	}
-
 }

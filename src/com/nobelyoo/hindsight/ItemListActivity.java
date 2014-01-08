@@ -14,7 +14,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.Entity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
@@ -238,9 +240,9 @@ public class ItemListActivity extends Activity {
 	/**
 	 * Loads data in separate thread
 	 */
-	private class LoadMemoriesTask extends AsyncTask<Void, Void, HttpResponse> {
+	private class LoadMemoriesTask extends AsyncTask<Void, Void, String> {
 
-		protected HttpResponse doInBackground(Void... args) {
+		protected String doInBackground(Void... args) {
 			try {
 				// Create a new HttpClient and build GET request
 				HttpClient httpClient = new DefaultHttpClient();
@@ -253,7 +255,15 @@ public class ItemListActivity extends Activity {
 				String sessionid = prefs.getString("sessionid", null);
 				httpGet.setHeader("sessionid", sessionid);
 
-				return httpClient.execute(httpGet);
+				HttpResponse response = httpClient.execute(httpGet);
+				
+				JSONObject json = new JSONObject(convertStreamToString(response.getEntity().getContent()));
+				result = json.getJSONArray("memories");
+				if (response.getStatusLine().getStatusCode() == 200) {
+					return "SUCCESS";
+				} else {
+					return null;
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -263,21 +273,9 @@ public class ItemListActivity extends Activity {
 		/*
 		 * Populate list view
 		 */
-		protected void onPostExecute(HttpResponse response) {
-			// Get JSON array
-			JSONObject json;
-			try {
-				json = new JSONObject(convertStreamToString(response.getEntity().getContent()));
-				result = json.getJSONArray("memories");
-			} catch (IllegalStateException e) {
-				e.printStackTrace();
-			} catch (JSONException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		protected void onPostExecute(String status) {
 			// If successful, refresh list view
-			if (response.getStatusLine().getStatusCode() == 200) {
+			if (status.equals("SUCCESS")) {
 				// test = adapter.getCount();
 				// I think this is a bad way of doing it, but I don't know how to get notifyDataSetChanged to work
 				listView.setAdapter(new JSONAdapter(activity));

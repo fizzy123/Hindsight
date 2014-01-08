@@ -221,10 +221,10 @@ public class LoginActivity extends Activity {
 	 * Represents an asynchronous login/registration task used to authenticate
 	 * the user.
 	 */
-	public class UserLoginTask extends AsyncTask<Void, Void, HttpResponse> {
+	public class UserLoginTask extends AsyncTask<Void, Void, String> {
 		
 		@Override
-		protected HttpResponse doInBackground(Void... params) {
+		protected String doInBackground(Void... params) {
 
 			try {
 				// Connect to the server and try to login
@@ -252,8 +252,40 @@ public class LoginActivity extends Activity {
 				httpPost.setEntity(new UrlEncodedFormEntity(context, "UTF-8"));
 				
 				//Execute POST Request
-				return httpClient.execute(httpPost);
+				HttpResponse httpResponse = httpClient.execute(httpPost);
+				
+				mAuthTask = null;
+				showProgress(false);
 
+				// Grabs status code and session_id
+				int result = httpResponse.getStatusLine().getStatusCode();
+				
+				// If everything is successful
+				if (result == 200) {
+					// Get sessionid from headers
+					Header[] headers = httpResponse.getHeaders("Set-Cookie");
+					String sessionid = "";
+					for (Header header:headers) {
+						for (HeaderElement element:header.getElements()){
+							if (element.getName().equals("sessionid")){
+								sessionid = element.getValue();
+							}
+						}
+					}
+					
+					// Save sessionid in preferences
+					SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+					Editor edit = prefs.edit();
+					edit.putString("sessionid", sessionid);
+					edit.apply();
+					//Go to home screen
+					return "SUCCESS";
+				} else if (result == 403){
+					return "FORBIDDEN";
+				} else {
+					return null;
+				}	
+				
 			} catch (ClientProtocolException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -264,39 +296,14 @@ public class LoginActivity extends Activity {
 		}
 
 		@Override
-		protected void onPostExecute(final HttpResponse response ) {
-			mAuthTask = null;
-			showProgress(false);
-
-			// Grabs status code and session_id
-			int result = response.getStatusLine().getStatusCode();
-			
-			// If everything is successful
-			if (result == 200) {
-				// Get sessionid from headers
-				Header[] headers = response.getHeaders("Set-Cookie");
-				String sessionid = "";
-				for (Header header:headers) {
-					for (HeaderElement element:header.getElements()){
-						if (element.getName().equals("sessionid")){
-							sessionid = element.getValue();
-						}
-					}
-				}
-				
-				// Save sessionid in preferences
-				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-				Editor edit = prefs.edit();
-				edit.putString("sessionid", sessionid);
-				edit.apply();
-				//Go to home screen
+		protected void onPostExecute(final String status) {
+			if (status.equals("SUCCESS")) {
 				goHome();
-			} else if (result == 403){
-				// Assumes that password was incorrect, but is probably not safe assumption to make
+			} else if (status.equals("FORBIDDEN")) {
 				Toast.makeText(getBaseContext(), "No account with that username and password has been found", Toast.LENGTH_LONG).show();
 			} else {
 				Toast.makeText(getBaseContext(), "There has been an internal server error", Toast.LENGTH_LONG).show();
-			}	
+			}
 		}
 
 		@Override

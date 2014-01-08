@@ -136,11 +136,9 @@ public class UploadActivity extends Activity {
 	/**
 	 * Uploads memory data in separate thread
 	 */
-	private class UploadMemoryTask extends AsyncTask<Void, Void, HttpResponse> {
-	    
-		private int result = 0;
-		
-		protected HttpResponse doInBackground(Void... args) {
+	private class UploadMemoryTask extends AsyncTask<Void, Void, String> {
+	    	
+		protected String doInBackground(Void... args) {
 			Intent intent = getIntent();
 			
 			try {
@@ -211,7 +209,12 @@ public class UploadActivity extends Activity {
 			    
 			    // execute post request
 			    System.out.println("executing request " + httpPost.getRequestLine());
-				return httpClient.execute(httpPost, localContext);
+			    HttpResponse httpResponse = httpClient.execute(httpPost, localContext);
+			    if (httpResponse.getStatusLine().getStatusCode() == 200) {
+			    	return "SUCCESS";
+			    } else {
+			    	return null;
+			    }
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -221,9 +224,9 @@ public class UploadActivity extends Activity {
 		/*
 		 * Populate view
 		 */
-		protected void onPostExecute(HttpResponse response) {
+		protected void onPostExecute(String status) {
 			// If successful, populate view
-			if (response.getStatusLine().getStatusCode() == 200) {
+			if (status.equals("SUCCESS")) {
 				Intent intent = new Intent(getBaseContext(), ItemListActivity.class);
 				startActivity(intent);
 				finish();

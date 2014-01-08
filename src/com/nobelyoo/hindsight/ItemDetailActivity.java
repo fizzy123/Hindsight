@@ -50,10 +50,10 @@ public class ItemDetailActivity extends FragmentActivity {
 	/**
 	 * Loads data in separate thread
 	 */
-	private class LoadMemoryTask extends AsyncTask<Void, Void, HttpResponse> {
+	private class LoadMemoryTask extends AsyncTask<Void, Void, String> {
 	    
 		private JSONObject result;
-		protected HttpResponse doInBackground(Void... args) {
+		protected String doInBackground(Void... args) {
 			Intent intent = getIntent();
 			try {
 				// Create a new HttpClient and build GET request
@@ -69,7 +69,17 @@ public class ItemDetailActivity extends FragmentActivity {
 				httpGet.setHeader("sessionid", sessionid);
 				
 				// Execute GET request
-				return httpClient.execute(httpGet);
+				HttpResponse httpResponse = httpClient.execute(httpGet);
+				
+				JSONObject json = new JSONObject(convertStreamToString(httpResponse.getEntity().getContent()));
+				result = json.getJSONObject("memory");
+				
+				// If successful, populate view
+				if (httpResponse.getStatusLine().getStatusCode() == 200) {
+					return "SUCCESS";
+				} else {
+					return null;
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -79,21 +89,8 @@ public class ItemDetailActivity extends FragmentActivity {
 		/*
 		 * Populate view
 		 */
-		protected void onPostExecute(HttpResponse response) {
-			// get JSON Object
-			JSONObject json;
-			try {
-				json = new JSONObject(convertStreamToString(response.getEntity().getContent()));
-				result = json.getJSONObject("memory");
-			} catch (IllegalStateException e1) {
-				e1.printStackTrace();
-			} catch (JSONException e1) {
-				e1.printStackTrace();
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
-			// If successful, populate view
-			if (response.getStatusLine().getStatusCode() == 200) {
+		protected void onPostExecute(String status) {
+			if (status.equals("SUCCESS")) {
 				ImageView imageView = (ImageView) findViewById(R.id.image);
 	    	    TextView distanceTextView = (TextView) findViewById(R.id.distance);
 	    	    TextView captionTextView = (TextView) findViewById(R.id.caption);
@@ -103,13 +100,14 @@ public class ItemDetailActivity extends FragmentActivity {
 		    	    
 					ItemListActivity.imageLoader.DisplayImage(url, imageView);
 	    	    	distanceTextView.setText(result.getString("image_text"));
-	    	    	captionTextView.setText(result.getString("distance"));
+	    	    	captionTextView.setText(result.getString("distance")); 
 	    	    } catch (Exception e) {
 	    	    	e.printStackTrace();
 	    	    }
 			} else {
 				Toast.makeText(getBaseContext(), "There has been an internal server error", Toast.LENGTH_LONG).show();
 			}
+			
 		}
 	}
 	
