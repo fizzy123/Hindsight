@@ -138,8 +138,8 @@ public class LoadActivity extends Activity {
 					return "SUCCESS";
 				} else if (status == 500) {
 					return "SERVER_ERROR";
-				} else {
-					return null;
+				} else if (status == 403){
+					return "FORBIDDEN";
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -161,11 +161,11 @@ public class LoadActivity extends Activity {
 		/*
 		 * Send to the next activity
 		 */
-		private void sendOnwards(final String result) {
-			if (result.equals("SUCCESS")) {
+		private void sendOnwards(final String status) {
+			if (status.equals("SUCCESS")) {
 				// Has connection and credentials
 				goHome();
-			} else {
+			} else if (status.equals("FORBIDDEN")) {
 				// Needs to login
 				goLogin();
 			}

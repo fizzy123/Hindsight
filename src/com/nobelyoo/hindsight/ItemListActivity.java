@@ -261,8 +261,8 @@ public class ItemListActivity extends Activity {
 				result = json.getJSONArray("memories");
 				if (response.getStatusLine().getStatusCode() == 200) {
 					return "SUCCESS";
-				} else {
-					return null;
+				} else if (response.getStatusLine().getStatusCode() == 500){
+					return "SERVER_ERROR";
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -279,7 +279,7 @@ public class ItemListActivity extends Activity {
 				// test = adapter.getCount();
 				// I think this is a bad way of doing it, but I don't know how to get notifyDataSetChanged to work
 				listView.setAdapter(new JSONAdapter(activity));
-			} else {
+			} else if(status.equals("SERVER_ERROR")){
 				Toast.makeText(getBaseContext(), "There has been an internal server error", Toast.LENGTH_LONG).show();
 			}
 		}

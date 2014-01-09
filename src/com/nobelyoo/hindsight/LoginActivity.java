@@ -247,16 +247,13 @@ public class LoginActivity extends Activity {
 				
 				// Request parameters and other properties.
 				List<NameValuePair> context = new ArrayList<NameValuePair>(2);
-				context.add(new BasicNameValuePair("username", mEmail));
+				context.add(new BasicNameValuePair("email", mEmail));
 				context.add(new BasicNameValuePair("password", mPassword));
 				httpPost.setEntity(new UrlEncodedFormEntity(context, "UTF-8"));
 				
 				//Execute POST Request
 				HttpResponse httpResponse = httpClient.execute(httpPost);
-				
-				mAuthTask = null;
-				showProgress(false);
-
+		
 				// Grabs status code and session_id
 				int result = httpResponse.getStatusLine().getStatusCode();
 				
@@ -282,8 +279,8 @@ public class LoginActivity extends Activity {
 					return "SUCCESS";
 				} else if (result == 403){
 					return "FORBIDDEN";
-				} else {
-					return null;
+				} else if (result == 500){
+					return "SERVER_ERROR";
 				}	
 				
 			} catch (ClientProtocolException e) {
@@ -297,11 +294,13 @@ public class LoginActivity extends Activity {
 
 		@Override
 		protected void onPostExecute(final String status) {
+			mAuthTask = null;
+			showProgress(false);
 			if (status.equals("SUCCESS")) {
 				goHome();
 			} else if (status.equals("FORBIDDEN")) {
 				Toast.makeText(getBaseContext(), "No account with that username and password has been found", Toast.LENGTH_LONG).show();
-			} else {
+			} else if (status.equals("SERVER_ERROR")){
 				Toast.makeText(getBaseContext(), "There has been an internal server error", Toast.LENGTH_LONG).show();
 			}
 		}

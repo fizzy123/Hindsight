@@ -46,7 +46,7 @@ public class RegisterActivity extends Activity {
 	/**
 	 * Keep track of the login task to ensure we can cancel it if requested.
 	 */
-	private UserLoginTask mAuthTask = null;
+	private UserRegistrationTask mRegistrationTask = null;
 
 	// Values for email and password at the time of the login attempt.
 	private String mEmail;
@@ -114,7 +114,7 @@ public class RegisterActivity extends Activity {
 	 * errors are presented and no actual register attempt is made.
 	 */
 	public void attemptRegister() {
-		if (mAuthTask != null) {
+		if (mRegistrationTask != null) {
 			return;
 		}
 
@@ -169,8 +169,8 @@ public class RegisterActivity extends Activity {
 			// perform the user login attempt.
 			mLoginStatusMessageView.setText(R.string.login_progress_signing_in);
 			showProgress(true);
-			mAuthTask = new UserLoginTask();
-			mAuthTask.execute((Void) null);
+			mRegistrationTask = new UserRegistrationTask();
+			mRegistrationTask.execute((Void) null);
 		}
 	}
 
@@ -221,11 +221,10 @@ public class RegisterActivity extends Activity {
 	 * Represents an asynchronous login/registration task used to authenticate
 	 * the user.
 	 */
-	public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
-		
-		private HttpResponse response = null;
+	public class UserRegistrationTask extends AsyncTask<Void, Void, String> {
+
 		@Override
-		protected Boolean doInBackground(Void... params) {
+		protected String doInBackground(Void... params) {
 
 			try {
 				// Connect to the server and try to login
@@ -250,40 +249,39 @@ public class RegisterActivity extends Activity {
 				
 				// Request parameters and other properties.
 				List<NameValuePair> context = new ArrayList<NameValuePair>(2);
-				context.add(new BasicNameValuePair("username", mEmail));
+				context.add(new BasicNameValuePair("email", mEmail));
 				context.add(new BasicNameValuePair("password", mPassword));
 				httpPost.setEntity(new UrlEncodedFormEntity(context, "UTF-8"));
 				
 				// Executes POST request
-				response = httpClient.execute(httpPost);
-				return true;
+				HttpResponse response = httpClient.execute(httpPost);
+				int status = response.getStatusLine().getStatusCode();
+				if (status == 200) {
+					return "SUCCESS";
+				} else if (status == 500) {
+					return "SERVER_ERROR";
+				}
 			} catch (ClientProtocolException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			return false;
+			return null;
 		}
 
 		@Override
-		protected void onPostExecute(final Boolean success) {
-			mAuthTask = null;
-			showProgress(false);
-
-			int result = response.getStatusLine().getStatusCode();
-
+		protected void onPostExecute(final String status) {
 			// If server returns successful, go to home screen.
-			if (result == 200) {
+			if (status.equals("SUCCESS")) {
 				goHome();
-			} else {
-				Toast.makeText(getApplicationContext(), "Registration Failed", Toast.LENGTH_LONG).show();
-				mPasswordView.requestFocus();
+			} else if (status.equals("SERVER_ERROR")) {
+				Toast.makeText(getApplicationContext(), "There was a server error", Toast.LENGTH_LONG).show();
 			}
 		}
 
 		@Override
 		protected void onCancelled() {
-			mAuthTask = null;
+			mRegistrationTask = null;
 			showProgress(false);
 		}
 		

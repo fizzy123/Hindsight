@@ -77,8 +77,8 @@ public class ItemDetailActivity extends FragmentActivity {
 				// If successful, populate view
 				if (httpResponse.getStatusLine().getStatusCode() == 200) {
 					return "SUCCESS";
-				} else {
-					return null;
+				} else if (httpResponse.getStatusLine().getStatusCode() == 500) {
+					return "SERVER_ERROR";
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -104,7 +104,7 @@ public class ItemDetailActivity extends FragmentActivity {
 	    	    } catch (Exception e) {
 	    	    	e.printStackTrace();
 	    	    }
-			} else {
+			} else if (status.equals("SERVER_ERROR")){
 				Toast.makeText(getBaseContext(), "There has been an internal server error", Toast.LENGTH_LONG).show();
 			}
 			
