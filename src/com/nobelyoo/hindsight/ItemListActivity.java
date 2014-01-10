@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.List;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -77,10 +78,17 @@ public class ItemListActivity extends Activity {
 		// Acquire a reference to the system Location Manager
 		locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
-		// Request location updates from GPS and NETWORK
-		locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
-		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-
+		List<String> locationProviders = locationManager.getAllProviders();
+		
+		for (String locationProvider : locationProviders) {
+			Location lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
+			if (currentLocation == null) {
+				currentLocation = lastKnownLocation;
+			} else if (isBetterLocation(lastKnownLocation, currentLocation)) {
+				currentLocation = lastKnownLocation;
+			}
+		}
+		
 		// Start task that regularly checks location to see if it should update
 		locationHandler.postDelayed(locationRunnable, 0);
 		
@@ -123,14 +131,6 @@ public class ItemListActivity extends Activity {
 	// Define a listener that responds to location updates
 	private LocationListener locationListener = new LocationListener() {
 		public void onLocationChanged(Location location) {
-			if (currentLocation == null) {
-				locationManager.removeUpdates(locationListener);
-				runOnUiThread(new Runnable() {
-					public void run() {
-						new LoadMemoriesTask().execute();
-					}
-				});
-			}
 			if (isBetterLocation(location, currentLocation)) {
 				currentLocation = location;
 			}
