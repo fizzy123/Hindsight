@@ -72,19 +72,20 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
     }
     public static final class drawable {
         public static final int gradient_background=0x7f020000;
-        public static final int ic_launcher=0x7f020001;
-        public static final int stub=0x7f020002;
+        public static final int hi_def_logo=0x7f020001;
+        public static final int ic_launcher=0x7f020002;
+        public static final int stub=0x7f020003;
     }
     public static final class id {
         public static final int RelativeLayoutMain=0x7f0b0007;
-        public static final int action_settings=0x7f0b0018;
+        public static final int action_settings=0x7f0b0017;
         public static final int button_upload=0x7f0b0016;
         public static final int camera=0x7f0b0005;
         public static final int caption=0x7f0b0002;
         public static final int distance=0x7f0b0003;
         public static final int email=0x7f0b000f;
         public static final int image=0x7f0b0001;
-        public static final int image_text=0x7f0b0017;
+        public static final int imageView=0x7f0b000b;
         public static final int item_detail=0x7f0b0000;
         public static final int item_detail_container=0x7f0b0006;
         public static final int item_list=0x7f0b0004;
@@ -95,12 +96,11 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int password=0x7f0b0010;
         public static final int passwordConfirm=0x7f0b0014;
         public static final int photo_image=0x7f0b0015;
-        public static final int progressBarLoad=0x7f0b000a;
+        public static final int progressBarLoad=0x7f0b0008;
         public static final int register_button=0x7f0b0013;
         public static final int sign_in_button=0x7f0b0012;
-        public static final int textViewInfo=0x7f0b0008;
-        public static final int textViewLoad=0x7f0b000b;
-        public static final int textViewTitle=0x7f0b0009;
+        public static final int textViewLoad=0x7f0b0009;
+        public static final int textViewTitle=0x7f0b000a;
     }
     public static final class layout {
         public static final int activity_item_detail=0x7f030000;
@@ -195,31 +195,28 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
 
     
 
-            Theme customizations available in newer API levels can go in
-            res/values-vXX/styles.xml, while customizations related to
-            backward-compatibility can go here.
-
-        
-
         Base application theme for API 11+. This theme completely replaces
         AppBaseTheme from res/values/styles.xml on API 11+ devices.
 
     
- API 11 theme customizations can go here. 
 
         Base application theme for API 14+. This theme completely replaces
         AppBaseTheme from BOTH res/values/styles.xml and
         res/values-v11/styles.xml on API 14+ devices.
     
- API 14 theme customizations can go here. 
          */
         public static final int AppBaseTheme=0x7f090000;
+        /**  All customizations that are NOT specific to a particular API-level can go here. 
+         */
         public static final int AppTheme=0x7f090001;
-        public static final int ButtonBar=0x7f090004;
-        public static final int ButtonBarButton=0x7f090005;
-        public static final int FullscreenActionBarStyle=0x7f090006;
-        public static final int FullscreenTheme=0x7f090003;
-        public static final int LoginFormContainer=0x7f090002;
+        public static final int ButtonBar=0x7f090006;
+        public static final int ButtonBarButton=0x7f090007;
+        public static final int FullscreenActionBarStyle=0x7f090009;
+        public static final int FullscreenTheme=0x7f090005;
+        public static final int LoadingTheme=0x7f090008;
+        public static final int LoginFormContainer=0x7f090004;
+        public static final int MyActionBar=0x7f090002;
+        public static final int NoTitleText=0x7f090003;
     }
     public static final class xml {
         public static final int pref_data_sync=0x7f040000;

@@ -84,8 +84,10 @@ public class ItemListActivity extends Activity {
 			Location lastKnownLocation = locationManager.getLastKnownLocation(locationProvider);
 			if (currentLocation == null) {
 				currentLocation = lastKnownLocation;
-			} else if (isBetterLocation(lastKnownLocation, currentLocation)) {
-				currentLocation = lastKnownLocation;
+			} else if (lastKnownLocation != null) {
+				if (isBetterLocation(lastKnownLocation, currentLocation)) {
+					currentLocation = lastKnownLocation;
+				}
 			}
 		}
 		
@@ -349,7 +351,6 @@ public class ItemListActivity extends Activity {
 			try {
 				String url = "http://128.61.107.111:56788/media/" + result.getJSONObject(position).getString("image");
 				imageLoader.DisplayImage(url, imageView);
-				textView.setText(result.getJSONObject(position).getString("image_text"));
 				textView.setText(result.getJSONObject(position).getString("distance"));
 			} catch (JSONException e) {
 				e.printStackTrace();

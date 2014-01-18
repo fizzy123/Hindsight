@@ -18,12 +18,14 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class LoadActivity extends Activity {
@@ -33,6 +35,11 @@ public class LoadActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_load);
 
+		TextView myTextView=(TextView)findViewById(R.id.textViewTitle);
+		Typeface font=Typeface.createFromAsset(getAssets(),"font/ORATORSTD.OTF");
+		
+		myTextView.setTypeface(font);
+		 
 		// Check for network availability
 		if (isNetworkAvailable() == true) {
 			// Start a new thread that will download all the data
