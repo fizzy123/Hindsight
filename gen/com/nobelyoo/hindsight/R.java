@@ -25,31 +25,35 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int buttonBarStyle=0x7f010000;
     }
     public static final class color {
-        public static final int aqua=0x7f05000c;
-        public static final int black=0x7f050012;
-        public static final int black_overlay=0x7f050013;
+        public static final int aqua=0x7f05000e;
+        public static final int bg_dark_blue=0x7f050016;
+        public static final int black=0x7f050014;
+        public static final int black_overlay=0x7f050015;
         /**  Translucent Color 
          */
         public static final int black_translucent=0x7f050002;
-        public static final int blue=0x7f050010;
+        public static final int blue=0x7f050012;
         /**  Application theme. 
          */
-        public static final int custom_theme_color=0x7f050014;
+        public static final int custom_theme_color=0x7f050018;
+        public static final int dark_gray=0x7f05000a;
         public static final int fuchsia=0x7f050005;
         public static final int gradient_end=0x7f050001;
         /**  Gradient Colors 
          */
         public static final int gradient_start=0x7f050000;
-        public static final int gray=0x7f050008;
-        public static final int green=0x7f05000f;
-        public static final int lime=0x7f05000d;
-        public static final int maroon=0x7f05000b;
-        public static final int navy=0x7f050011;
-        public static final int olive=0x7f050009;
-        public static final int purple=0x7f05000a;
+        public static final int gray=0x7f050009;
+        public static final int green=0x7f050011;
+        public static final int light_gray=0x7f050008;
+        public static final int lime=0x7f05000f;
+        public static final int maroon=0x7f05000d;
+        public static final int navy=0x7f050013;
+        public static final int olive=0x7f05000b;
+        public static final int purple=0x7f05000c;
         public static final int red=0x7f050006;
         public static final int silver=0x7f050007;
-        public static final int teal=0x7f05000e;
+        public static final int teal=0x7f050010;
+        public static final int text_light_blue=0x7f050017;
         /**  Standard Colors 
          */
         public static final int white=0x7f050003;
@@ -73,34 +77,39 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
     public static final class drawable {
         public static final int gradient_background=0x7f020000;
         public static final int hi_def_logo=0x7f020001;
-        public static final int ic_launcher=0x7f020002;
-        public static final int stub=0x7f020003;
+        public static final int ic_camera=0x7f020002;
+        public static final int ic_launcher=0x7f020003;
+        public static final int rounded_corner_bg=0x7f020004;
+        public static final int stub=0x7f020005;
     }
     public static final class id {
-        public static final int RelativeLayoutMain=0x7f0b0007;
-        public static final int action_settings=0x7f0b0017;
-        public static final int button_upload=0x7f0b0016;
-        public static final int camera=0x7f0b0005;
-        public static final int caption=0x7f0b0002;
-        public static final int distance=0x7f0b0003;
-        public static final int email=0x7f0b000f;
+        public static final int RelativeLayoutMain=0x7f0b0008;
+        public static final int action_settings=0x7f0b001a;
+        public static final int button_upload=0x7f0b0018;
+        public static final int camera=0x7f0b0019;
+        public static final int caption=0x7f0b0005;
+        public static final int distance=0x7f0b0002;
+        public static final int email=0x7f0b0010;
         public static final int image=0x7f0b0001;
-        public static final int imageView=0x7f0b000b;
+        public static final int imageView=0x7f0b000c;
         public static final int item_detail=0x7f0b0000;
-        public static final int item_detail_container=0x7f0b0006;
-        public static final int item_list=0x7f0b0004;
-        public static final int login=0x7f0b0011;
-        public static final int login_form=0x7f0b000e;
-        public static final int login_status=0x7f0b000c;
-        public static final int login_status_message=0x7f0b000d;
-        public static final int password=0x7f0b0010;
-        public static final int passwordConfirm=0x7f0b0014;
-        public static final int photo_image=0x7f0b0015;
-        public static final int progressBarLoad=0x7f0b0008;
-        public static final int register_button=0x7f0b0013;
-        public static final int sign_in_button=0x7f0b0012;
-        public static final int textViewLoad=0x7f0b0009;
-        public static final int textViewTitle=0x7f0b000a;
+        public static final int item_detail_container=0x7f0b0007;
+        public static final int item_list=0x7f0b0006;
+        public static final int km=0x7f0b0003;
+        public static final int login=0x7f0b0012;
+        public static final int login_form=0x7f0b000f;
+        public static final int login_status=0x7f0b000d;
+        public static final int login_status_message=0x7f0b000e;
+        public static final int owner=0x7f0b0004;
+        public static final int password=0x7f0b0011;
+        public static final int passwordConfirm=0x7f0b0015;
+        public static final int photo_image=0x7f0b0017;
+        public static final int progressBarLoad=0x7f0b0009;
+        public static final int register_button=0x7f0b0014;
+        public static final int sign_in_button=0x7f0b0013;
+        public static final int textViewLoad=0x7f0b000a;
+        public static final int textViewTitle=0x7f0b000b;
+        public static final int upload=0x7f0b0016;
     }
     public static final class layout {
         public static final int activity_item_detail=0x7f030000;
@@ -132,57 +141,59 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int upload=0x7f0a0001;
     }
     public static final class string {
-        public static final int action_forgot_password=0x7f070016;
+        public static final int action_forgot_password=0x7f070018;
         public static final int action_settings=0x7f070001;
-        public static final int action_sign_in_login=0x7f070014;
-        public static final int action_sign_in_register=0x7f070015;
+        public static final int action_sign_in_login=0x7f070016;
+        public static final int action_sign_in_register=0x7f070017;
         public static final int app_name=0x7f070000;
         public static final int camera=0x7f070006;
         public static final int camera_preview_desc=0x7f07000b;
+        public static final int caption_hint=0x7f070010;
         public static final int dummy_button=0x7f070008;
         public static final int dummy_content=0x7f070009;
-        public static final int error_field_required=0x7f07001b;
-        public static final int error_incorrect_password=0x7f07001a;
-        public static final int error_invalid_email=0x7f070018;
-        public static final int error_invalid_password=0x7f070019;
-        public static final int error_not_identical=0x7f07001c;
+        public static final int error_field_required=0x7f07001d;
+        public static final int error_incorrect_password=0x7f07001c;
+        public static final int error_invalid_email=0x7f07001a;
+        public static final int error_invalid_password=0x7f07001b;
+        public static final int error_not_identical=0x7f07001e;
         public static final int hello_world=0x7f07000d;
         public static final int info=0x7f070005;
+        public static final int km=0x7f07000f;
         public static final int loading=0x7f070004;
-        public static final int login_progress_signing_in=0x7f070017;
-        public static final int pref_default_display_name=0x7f070022;
-        public static final int pref_description_social_recommendations=0x7f070020;
+        public static final int login_progress_signing_in=0x7f070019;
+        public static final int pref_default_display_name=0x7f070024;
+        public static final int pref_description_social_recommendations=0x7f070022;
         /**  Example settings for Data & Sync 
          */
-        public static final int pref_header_data_sync=0x7f070024;
+        public static final int pref_header_data_sync=0x7f070026;
         /**  Strings related to Settings 
  Example General settings 
          */
-        public static final int pref_header_general=0x7f07001e;
+        public static final int pref_header_general=0x7f070020;
         /**  Example settings for Notifications 
          */
-        public static final int pref_header_notifications=0x7f070027;
-        public static final int pref_ringtone_silent=0x7f07002a;
-        public static final int pref_title_add_friends_to_messages=0x7f070023;
-        public static final int pref_title_display_name=0x7f070021;
-        public static final int pref_title_new_message_notifications=0x7f070028;
-        public static final int pref_title_ringtone=0x7f070029;
-        public static final int pref_title_social_recommendations=0x7f07001f;
-        public static final int pref_title_sync_frequency=0x7f070025;
-        public static final int pref_title_system_sync_settings=0x7f070026;
-        public static final int pref_title_vibrate=0x7f07002b;
+        public static final int pref_header_notifications=0x7f070029;
+        public static final int pref_ringtone_silent=0x7f07002c;
+        public static final int pref_title_add_friends_to_messages=0x7f070025;
+        public static final int pref_title_display_name=0x7f070023;
+        public static final int pref_title_new_message_notifications=0x7f07002a;
+        public static final int pref_title_ringtone=0x7f07002b;
+        public static final int pref_title_social_recommendations=0x7f070021;
+        public static final int pref_title_sync_frequency=0x7f070027;
+        public static final int pref_title_system_sync_settings=0x7f070028;
+        public static final int pref_title_vibrate=0x7f07002d;
         /**  Strings related to login and registering 
          */
-        public static final int prompt_email=0x7f070011;
-        public static final int prompt_password=0x7f070012;
-        public static final int prompt_password_confirm=0x7f070013;
+        public static final int prompt_email=0x7f070013;
+        public static final int prompt_password=0x7f070014;
+        public static final int prompt_password_confirm=0x7f070015;
         public static final int title_activity_camera=0x7f070007;
         /**  Titles of Activities 
          */
-        public static final int title_activity_login=0x7f07000f;
+        public static final int title_activity_login=0x7f070011;
         public static final int title_activity_main=0x7f07000c;
-        public static final int title_activity_register=0x7f070010;
-        public static final int title_activity_settings=0x7f07001d;
+        public static final int title_activity_register=0x7f070012;
+        public static final int title_activity_settings=0x7f07001f;
         public static final int title_activity_upload=0x7f07000e;
         public static final int title_item_detail=0x7f070003;
         public static final int title_item_list=0x7f070002;
@@ -209,14 +220,16 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         /**  All customizations that are NOT specific to a particular API-level can go here. 
          */
         public static final int AppTheme=0x7f090001;
-        public static final int ButtonBar=0x7f090006;
-        public static final int ButtonBarButton=0x7f090007;
-        public static final int FullscreenActionBarStyle=0x7f090009;
-        public static final int FullscreenTheme=0x7f090005;
-        public static final int LoadingTheme=0x7f090008;
-        public static final int LoginFormContainer=0x7f090004;
+        public static final int ButtonBar=0x7f090008;
+        public static final int ButtonBarButton=0x7f090009;
+        public static final int FullscreenActionBarStyle=0x7f09000b;
+        public static final int FullscreenTheme=0x7f090007;
+        public static final int LoadingTheme=0x7f09000a;
+        public static final int LoginFormContainer=0x7f090006;
         public static final int MyActionBar=0x7f090002;
-        public static final int NoTitleText=0x7f090003;
+        public static final int MyButton=0x7f090003;
+        public static final int MyEditText=0x7f090004;
+        public static final int NoTitleText=0x7f090005;
     }
     public static final class xml {
         public static final int pref_data_sync=0x7f040000;

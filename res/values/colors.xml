@@ -6,7 +6,7 @@
     <color name="gradient_end">#176685</color>
 
     <!-- Translucent Color -->
-    <color name="black_translucent">#44000000</color>
+    <color name="black_translucent">#75000000</color>
 
     <!-- Standard Colors -->
     <color name="white">#FFFFFF</color>
@@ -14,7 +14,9 @@
     <color name="fuchsia">#FF00FF</color>
     <color name="red">#FF0000</color>
     <color name="silver">#C0C0C0</color>
+    <color name="light_gray">#b6b6b6</color>
     <color name="gray">#808080</color>
+    <color name="dark_gray">#5b5b5b</color>
     <color name="olive">#808000</color>
     <color name="purple">#800080</color>
     <color name="maroon">#800000</color>
@@ -26,5 +28,7 @@
     <color name="navy">#000080</color>
     <color name="black">#4b4b4b</color>
     <color name="black_overlay">#66000000</color>
+    <color name="bg_dark_blue">#176685</color>
+    <color name="text_light_blue">#8ebacb</color>
 
 </resources>

@@ -34,6 +34,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
@@ -42,6 +43,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class UploadActivity extends Activity {
@@ -57,9 +59,20 @@ public class UploadActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_upload);
 		
+		TextView ownerView = (TextView) findViewById(R.id.owner);
+		mCaptionView = (EditText) findViewById(R.id.caption);
+		Button uploadButton = (Button) findViewById(R.id.button_upload);
+		
+		//set font
+		Typeface font=Typeface.createFromAsset(getAssets(),"font/BEBASNEUE.OTF");
+		uploadButton.setTypeface(font);
+		ownerView.setTypeface(font);
+		
+		font=Typeface.createFromAsset(getAssets(),"font/TRADITIONELLSANS-BOLD.TTF");
+		mCaptionView.setTypeface(font);
+		
 		// Grab views
 		photoImage = (ImageView) findViewById(R.id.photo_image);
-		mCaptionView = (EditText) findViewById(R.id.caption);
 
 		// Start Camera Activity
 		Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -128,7 +141,7 @@ public class UploadActivity extends Activity {
 			 if (oldDrawable != null) { ((BitmapDrawable)oldDrawable).getBitmap().recycle(); }
 		     Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath());
 		     BitmapDrawable drawable = new BitmapDrawable(this.getResources(), bitmap);
-		     photoImage.setScaleType(ImageView.ScaleType.FIT_CENTER);
+		     photoImage.setScaleType(ImageView.ScaleType.FIT_CENTER );
 		     photoImage.setImageDrawable(drawable);
 		  }       
 		}

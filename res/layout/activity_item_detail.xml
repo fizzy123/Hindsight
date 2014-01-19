@@ -1,36 +1,64 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/item_detail"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".ItemDetailActivity"
-    tools:ignore="MergeRootFrame" >
+    tools:ignore="MergeRootFrame"
+    android:background="@color/bg_dark_blue" >
     
         <ImageView
         android:id="@+id/image"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:scaleType="centerCrop" />
+        
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="36dp"
+            android:background="@color/white">
+            
+            <TextView
+        		android:id="@+id/distance"
+        		android:layout_width="wrap_content"
+        		android:layout_height="wrap_content"
+        		android:layout_alignParentLeft="true"
+        		android:layout_alignWithParentIfMissing="true"
+        		android:textColor="@color/light_gray"
+        		android:layout_centerVertical = "True"
+        		android:textSize="36sp" />
+            
+            <TextView
+        		android:id="@+id/km"
+        		android:layout_width="wrap_content"
+        		android:layout_height="wrap_content"
+        		android:layout_toRightOf="@+id/distance"
+        		android:textColor="@color/light_gray"
+        		android:layout_centerVertical = "True"
+        		android:layout_alignBottom="@+id/distance"
+        		android:text="@+string/km"
+        		android:paddingBottom="2dp"
+        		android:textSize="18sp" />
+            
+            <TextView
+        		android:id="@+id/owner"
+        		android:layout_width="wrap_content"
+        		android:layout_height="wrap_content"
+        		android:layout_alignParentRight="true"
+        		android:layout_alignWithParentIfMissing="true"
+        		android:textColor="@color/light_gray"
+        		android:layout_centerVertical = "True"
+        		android:textSize="36sp" />
+        </RelativeLayout>
         
         <TextView
         android:id="@+id/caption"
         android:layout_width="fill_parent"
-        android:layout_height="26dip"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
+        android:layout_height="wrap_content"
         android:ellipsize="marquee"
         android:singleLine="true"
-        android:text="Description"
-        android:textSize="12sp" />
-
-    <TextView
-        android:id="@+id/distance"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/caption"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:layout_alignWithParentIfMissing="true"
-        android:gravity="center_vertical"
-        android:text="Example application"
-        android:textSize="16sp" />
-</FrameLayout>
+        android:textColor="@color/text_light_blue"
+        android:textSize="18sp" />
+    
+</LinearLayout>

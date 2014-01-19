@@ -12,16 +12,38 @@
         android:scaleType="centerCrop"
         android:src="@drawable/stub" />
 
+    <RelativeLayout 
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_width="wrap_content"
+    	android:layout_height="68dp"
+        android:background="@drawable/rounded_corner_bg"
+    	android:padding="0dip" >
+    
     <TextView
         android:id="@+id/distance"
         android:layout_width="wrap_content"
-        android:layout_height="20dip"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:background="@color/black_translucent"
+        android:layout_alignParentLeft="true"
+        android:paddingLeft="4dp"
+        android:textColor="@color/white"
         android:ellipsize="marquee"
         android:singleLine="true"
-        android:text="Description"
-        android:textSize="12sp" />
-
+        android:textSize="72sp" />
+    
+  	<TextView
+  	    android:id="@+id/km"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/distance"
+        android:layout_alignParentBottom="true"
+        android:paddingBottom="4dp"
+        android:paddingRight="4dp"
+        android:textColor="@color/white"
+        android:ellipsize="marquee"
+        android:singleLine="true"
+        android:text="@+string/km"
+        android:textSize="36sp" />
+	</RelativeLayout>
 </RelativeLayout> 

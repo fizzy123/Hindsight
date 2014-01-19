@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.Entity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -28,6 +29,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -117,14 +121,6 @@ public class ItemListActivity extends Activity {
 		super.onStop();
 		// Remove location checking tasks
 		locationHandler.removeCallbacks(locationRunnable);
-	}
-	
-	// When someone presses the camera button, go to the Camera activity
-	public void startCamera(View view) {
-		Intent intent = new Intent(ItemListActivity.this, UploadActivity.class);
-		intent.putExtra(LATITUDE, String.valueOf(currentLocation.getLatitude()));
-    	intent.putExtra(LONGITUDE, String.valueOf(currentLocation.getLongitude()));
-		startActivity(intent);
 	}
 	
 	private Location currentLocation = null;
@@ -346,6 +342,12 @@ public class ItemListActivity extends Activity {
 			View rowView = inflater.inflate(R.layout.list_item, parent, false);
 			ImageView imageView = (ImageView) rowView.findViewById(R.id.image);
 			TextView textView = (TextView) rowView.findViewById(R.id.distance);
+			TextView kmView = (TextView) rowView.findViewById(R.id.km);
+			
+			//set font
+			Typeface font=Typeface.createFromAsset(getAssets(),"font/BEBASNEUE.OTF");
+			textView.setTypeface(font);
+			kmView.setTypeface(font);
 			
 			//  Set Text values in the view from json result
 			try {
@@ -357,5 +359,28 @@ public class ItemListActivity extends Activity {
 			}
 			return rowView;
 		}
+	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+	    // Inflate the menu items for use in the action bar
+	    MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.main, menu);
+	    return super.onCreateOptionsMenu(menu);
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	    // Handle presses on the action bar items
+	    switch (item.getItemId()) {
+	        case R.id.camera:
+	        	Intent intent = new Intent(ItemListActivity.this, UploadActivity.class);
+	    		intent.putExtra(LATITUDE, String.valueOf(currentLocation.getLatitude()));
+	        	intent.putExtra(LONGITUDE, String.valueOf(currentLocation.getLongitude()));
+	    		startActivity(intent);
+	            return true;
+	        default:
+	            return super.onOptionsItemSelected(item);
+	    }
 	}
 }

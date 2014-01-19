@@ -16,5 +16,7 @@
     <string name="title_activity_main">MainActivity</string>
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_upload">UploadActivity</string>
+    <string name="km">km</string>
+    <string name="caption_hint">What\'s going on here?</string>
 
 </resources>

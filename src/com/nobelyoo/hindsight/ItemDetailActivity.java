@@ -15,6 +15,7 @@ import org.json.JSONObject;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -42,9 +43,20 @@ public class ItemDetailActivity extends FragmentActivity {
 		setContentView(R.layout.activity_item_detail);
 		// Start new thread
 		new LoadMemoryTask().execute();
-		// I don't know what this does. It just is in here by default.
-		// Show the Up button in the action bar.
-		//getActionBar().setDisplayHomeAsUpEnabled(true);		
+		
+		TextView textView = (TextView) findViewById(R.id.distance);
+		TextView kmView = (TextView) findViewById(R.id.km);
+		TextView ownerView = (TextView) findViewById(R.id.owner);
+		TextView captionView = (TextView) findViewById(R.id.caption);
+		
+		//set font
+		Typeface font=Typeface.createFromAsset(getAssets(),"font/BEBASNEUE.OTF");
+		textView.setTypeface(font);
+		kmView.setTypeface(font);
+		ownerView.setTypeface(font);
+		
+		font=Typeface.createFromAsset(getAssets(),"font/TRADITIONELLSANS-BOLD.TTF");
+		captionView.setTypeface(font);
 	}
 	
 	/**
@@ -94,13 +106,15 @@ public class ItemDetailActivity extends FragmentActivity {
 				ImageView imageView = (ImageView) findViewById(R.id.image);
 	    	    TextView distanceTextView = (TextView) findViewById(R.id.distance);
 	    	    TextView captionTextView = (TextView) findViewById(R.id.caption);
+	    	    TextView ownerTextView = (TextView) findViewById(R.id.owner);
 	    	    
 	    	    try {
 	    	    	String url = "http://128.61.107.111:56788/media/" + result.getString("image");
 		    	    
 					ItemListActivity.imageLoader.DisplayImage(url, imageView);
-	    	    	distanceTextView.setText(result.getString("image_text"));
-	    	    	captionTextView.setText(result.getString("distance")); 
+	    	    	captionTextView.setText(result.getString("caption"));
+	    	    	distanceTextView.setText(result.getString("distance")); 
+	    	    	ownerTextView.setText(result.getString("owner"));
 	    	    } catch (Exception e) {
 	    	    	e.printStackTrace();
 	    	    }
