@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.Entity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.graphics.Typeface;
 import android.location.Location;
 import android.location.LocationListener;
@@ -57,9 +58,12 @@ import com.technotalkative.loadwebimage.ImageLoader;
  * This activity also implements the required {@link ItemListFragment.Callbacks} interface to listen for item selections.
  */
 public class ItemListActivity extends Activity {
-	public final static String MEMORY_ID = "com.nobelyoo.hindsight.ID";
-	public final static String LATITUDE = "com.nobelyoo.hindsight.LATITUDE";
+	public final static String IMAGE = "com.nobelyoo.hindsight.IMAGE";
+	public final static String CAPTION = "com.nobelyoo.hindsight.CAPTION";
+	public final static String OWNER = "com.nobelyoo.hindsight.OWNER";
+	public final static String DISTANCE = "com.nobelyoo.hindsight.DISTANCE";
 	public final static String LONGITUDE = "com.nobelyoo.hindsight.LONGITUDE";
+	public final static String LATITUDE = "com.nobelyoo.hindsight.LATITUDE";
     private JSONArray result = null;
 
 	private ItemListActivity activity;
@@ -105,12 +109,13 @@ public class ItemListActivity extends Activity {
 	        		int position, long id) {
 	        	Intent intent = new Intent(ItemListActivity.this, ItemDetailActivity.class);
 	        	try {
-					intent.putExtra(MEMORY_ID, String.valueOf(result.getJSONObject(position).getInt("id")));
+					intent.putExtra(IMAGE, result.getJSONObject(position).getString("image"));
+		        	intent.putExtra(CAPTION, result.getJSONObject(position).getString("caption"));
+		        	intent.putExtra(OWNER, result.getJSONObject(position).getString("owner"));
+		        	intent.putExtra(DISTANCE, result.getJSONObject(position).getString("distance"));
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
-	        	intent.putExtra(LATITUDE, String.valueOf(currentLocation.getLatitude()));
-	        	intent.putExtra(LONGITUDE, String.valueOf(currentLocation.getLongitude()));
 	        	startActivity(intent);
 	        }
 	    });
@@ -121,6 +126,29 @@ public class ItemListActivity extends Activity {
 		super.onStop();
 		// Remove location checking tasks
 		locationHandler.removeCallbacks(locationRunnable);
+	}
+	
+	@Override
+	public void onSaveInstanceState(Bundle savedInstanceState) {
+	  super.onSaveInstanceState(savedInstanceState);
+	  // Save UI state changes to the savedInstanceState.
+	  // This bundle will be passed to onCreate if the process is
+	  // killed and restarted.
+	  if (result!=null) {
+		  savedInstanceState.putString("lastNearViewData", result.toString());
+	  }
+	}
+	
+	@Override
+	public void onRestoreInstanceState(Bundle savedInstanceState) {
+	  super.onRestoreInstanceState(savedInstanceState);
+	  // Restore UI state from the savedInstanceState.
+	  // This bundle has also been passed to onCreate.
+		try {
+			result = new JSONArray(savedInstanceState.getString("lastNearViewData"));
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private Location currentLocation = null;
@@ -257,6 +285,7 @@ public class ItemListActivity extends Activity {
 				
 				JSONObject json = new JSONObject(convertStreamToString(response.getEntity().getContent()));
 				result = json.getJSONArray("memories");
+
 				if (response.getStatusLine().getStatusCode() == 200) {
 					return "SUCCESS";
 				} else if (response.getStatusLine().getStatusCode() == 500){
