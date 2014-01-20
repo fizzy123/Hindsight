@@ -56,9 +56,11 @@
         android:id="@+id/caption"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:ellipsize="marquee"
-        android:singleLine="true"
         android:textColor="@color/text_light_blue"
-        android:textSize="18sp" />
+       	android:layout_marginTop="2dp"
+       	android:layout_marginLeft="2dp"
+       	android:layout_marginRight="2dp"
+       	android:textSize="36sp"
+       	android:layout_marginBottom="2dp" />
     
 </LinearLayout>
