@@ -16,6 +16,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -24,6 +26,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -32,6 +35,7 @@ import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,12 +44,12 @@ import android.widget.Toast;
  * Activity which displays a login screen to the user, offering registration as
  * well.
  */
-public class LoginActivity extends Activity {
+public class LoginActivity extends BaseActivity {
 
 	/**
 	 * The default email to populate the email field with.
 	 */
-	public static final String EXTRA_EMAIL = "com.example.android.authenticatordemo.extra.EMAIL";
+	public static final String EXTRA_USERNAME = "com.example.android.authenticatordemo.extra.EMAIL";
 
 	/**
 	 * Keep track of the login task to ensure we can cancel it if requested.
@@ -53,11 +57,11 @@ public class LoginActivity extends Activity {
 	private UserLoginTask mAuthTask = null;
 
 	// Values for email and password at the time of the login attempt.
-	private String mEmail;
+	private String mUsername;
 	private String mPassword;
 
 	// UI references.
-	private EditText mEmailView;
+	private EditText mUsernameView;
 	private EditText mPasswordView;
 	private View mLoginFormView;
 	private View mLoginStatusView;
@@ -70,9 +74,9 @@ public class LoginActivity extends Activity {
 		setContentView(R.layout.activity_login);
 
 		// Set up the login form.
-		mEmail = getIntent().getStringExtra(EXTRA_EMAIL);
-		mEmailView = (EditText) findViewById(R.id.email);
-		mEmailView.setText(mEmail);
+		mUsername = getIntent().getStringExtra(EXTRA_USERNAME);
+		mUsernameView = (EditText) findViewById(R.id.username);
+		mUsernameView.setText(mUsername);
 
 		mPasswordView = (EditText) findViewById(R.id.password);
 		mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -89,9 +93,19 @@ public class LoginActivity extends Activity {
 		mLoginFormView = findViewById(R.id.login_form);
 		mLoginStatusView = findViewById(R.id.login_status);
 		mLoginStatusMessageView = (TextView) findViewById(R.id.login_status_message);
-
+		
+		Button mSignInButton = (Button) findViewById(R.id.sign_in_button);
+		Button mRegisterButton = (Button) findViewById(R.id.register_button);
+		
+		//set font
+		Typeface font=Typeface.createFromAsset(getAssets(),"font/BEBASNEUE.OTF");
+		mUsernameView.setTypeface(font);
+		mPasswordView.setTypeface(font);
+		mSignInButton.setTypeface(font);
+		mRegisterButton.setTypeface(font);
+		
 		// The sign in button
-		findViewById(R.id.sign_in_button).setOnClickListener(new View.OnClickListener() {
+		mSignInButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				attemptLogin();
@@ -99,7 +113,7 @@ public class LoginActivity extends Activity {
 		});
 
 		// The register button
-		findViewById(R.id.register_button).setOnClickListener(new View.OnClickListener() {
+		mRegisterButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				goRegister();
@@ -119,11 +133,11 @@ public class LoginActivity extends Activity {
 		}
 
 		// Reset errors.
-		mEmailView.setError(null);
+		mUsernameView.setError(null);
 		mPasswordView.setError(null);
 
 		// Store values at the time of the login attempt.
-		mEmail = mEmailView.getText().toString();
+		mUsername = mUsernameView.getText().toString();
 		mPassword = mPasswordView.getText().toString();
 
 		boolean cancel = false;
@@ -141,13 +155,9 @@ public class LoginActivity extends Activity {
 		}
 
 		// Check for a valid email address.
-		if (TextUtils.isEmpty(mEmail)) {
-			mEmailView.setError(getString(R.string.error_field_required));
-			focusView = mEmailView;
-			cancel = true;
-		} else if (!mEmail.contains("@")) {
-			mEmailView.setError(getString(R.string.error_invalid_email));
-			focusView = mEmailView;
+		if (TextUtils.isEmpty(mUsername)) {
+			mUsernameView.setError(getString(R.string.error_field_required));
+			focusView = mUsernameView;
 			cancel = true;
 		}
 
@@ -231,7 +241,7 @@ public class LoginActivity extends Activity {
 				HttpClient httpClient = new DefaultHttpClient();
 				
 				// Get CSRF token
-				HttpGet httpGet = new HttpGet("http://128.61.107.111:56788/users/provide_csrf/");
+				HttpGet httpGet = new HttpGet("http://108.234.92.163:56788/users/provide_csrf/");
 				HttpResponse getResponse = httpClient.execute(httpGet);
 				HeaderElement[] headerElements = getResponse.getFirstHeader("Set-Cookie").getElements();
 				String CSRFTOKEN = "";
@@ -242,12 +252,12 @@ public class LoginActivity extends Activity {
 				}
 				
 				// Build Post Request
-				HttpPost httpPost = new HttpPost("http://128.61.107.111:56788/users/login/");
+				HttpPost httpPost = new HttpPost("http://108.234.92.163:56788/users/login/");
 				httpPost.setHeader("X-CSRFToken", CSRFTOKEN); //Attach CSRF token to POST request
 				
 				// Request parameters and other properties.
 				List<NameValuePair> context = new ArrayList<NameValuePair>(2);
-				context.add(new BasicNameValuePair("email", mEmail));
+				context.add(new BasicNameValuePair("username", mUsername));
 				context.add(new BasicNameValuePair("password", mPassword));
 				httpPost.setEntity(new UrlEncodedFormEntity(context, "UTF-8"));
 				
@@ -256,7 +266,8 @@ public class LoginActivity extends Activity {
 		
 				// Grabs status code and session_id
 				int result = httpResponse.getStatusLine().getStatusCode();
-				
+				JSONObject json = new JSONObject(convertStreamToString(httpResponse.getEntity().getContent()));
+				String username = json.getString("username");
 				// If everything is successful
 				if (result == 200) {
 					// Get sessionid from headers
@@ -274,10 +285,14 @@ public class LoginActivity extends Activity {
 					SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 					Editor edit = prefs.edit();
 					edit.putString("sessionid", sessionid);
+					edit.putString("username", username);
 					edit.apply();
 					//Go to home screen
 					return "SUCCESS";
 				} else if (result == 403){
+					if (httpResponse.getEntity().getContent().toString().equals("NOT_ACTIVE")) {
+						return "NOT_ACTIVE";
+					}
 					return "FORBIDDEN";
 				} else if (result == 500){
 					return "SERVER_ERROR";
@@ -286,6 +301,10 @@ public class LoginActivity extends Activity {
 			} catch (ClientProtocolException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (IllegalStateException e) {
+				e.printStackTrace();
+			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 
@@ -298,6 +317,8 @@ public class LoginActivity extends Activity {
 			showProgress(false);
 			if (status.equals("SUCCESS")) {
 				goHome();
+			} else if (status.equals("NOT_ACTIVE")) {
+				Toast.makeText(getBaseContext(), "Your account has not been activated. Please check your email.", Toast.LENGTH_LONG).show();
 			} else if (status.equals("FORBIDDEN")) {
 				Toast.makeText(getBaseContext(), "No account with that username and password has been found", Toast.LENGTH_LONG).show();
 			} else if (status.equals("SERVER_ERROR")){

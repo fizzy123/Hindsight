@@ -29,6 +29,8 @@
     <color name="black">#4b4b4b</color>
     <color name="black_overlay">#66000000</color>
     <color name="bg_dark_blue">#176685</color>
+    <color name="bg_darker_blue">#06506d</color>
     <color name="text_light_blue">#8ebacb</color>
+    <color name="text_dark_blue">#072d3c</color>
 
 </resources>

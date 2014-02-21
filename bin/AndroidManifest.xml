@@ -28,6 +28,7 @@
             android:theme="@style/LoadingTheme" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -35,11 +36,17 @@
             android:name="com.nobelyoo.hindsight.LoginActivity"
             android:label="@string/title_activity_login"
             android:windowSoftInputMode="adjustResize|stateVisible" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ItemListActivity" />
         </activity>
         <activity
             android:name="com.nobelyoo.hindsight.RegisterActivity"
             android:label="@string/title_activity_register"
             android:windowSoftInputMode="adjustResize|stateVisible" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ItemListActivity" />
         </activity>
         <activity
             android:name="com.nobelyoo.hindsight.SettingsActivity"
@@ -48,6 +55,14 @@
         <activity
             android:name="com.nobelyoo.hindsight.ItemListActivity"
             android:label="@string/title_item_list" >
+        </activity>
+        <activity
+            android:name="com.nobelyoo.hindsight.OwnedItemListActivity"
+            android:label="@string/title_item_list" 
+            android:parentActivityName=".ItemListActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ItemListActivity" />
         </activity>
         <activity
             android:name="com.nobelyoo.hindsight.ItemDetailActivity"
@@ -70,6 +85,13 @@
         <activity
             android:name="com.nobelyoo.hindsight.UploadActivity"
             android:label="@string/title_activity_upload" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ItemListActivity" />
+        </activity>
+        <activity
+            android:name="com.nobelyoo.hindsight.BaseActivity"
+            android:label="@string/title_activity_base" >
         </activity>
     </application>
 

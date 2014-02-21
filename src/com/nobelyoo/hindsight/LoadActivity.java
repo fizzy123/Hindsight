@@ -1,5 +1,10 @@
 package com.nobelyoo.hindsight;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
 import org.apache.http.Header;
 import org.apache.http.HeaderElement;
 import org.apache.http.HttpResponse;
@@ -13,11 +18,13 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
+import org.json.JSONObject;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -64,16 +71,7 @@ public class LoadActivity extends Activity {
 		}
 		return false;
 	}
-
-	/*
-	 * Goes to the LoginActivity
-	 */
-	private void goLogin() {
-		Intent intent = new Intent(getBaseContext(), LoginActivity.class);
-		startActivity(intent);
-		finish();
-	}
-
+	
 	/*
 	 * Goes to the home screen
 	 */
@@ -87,6 +85,7 @@ public class LoadActivity extends Activity {
 	 * Loads data in separate thread
 	 */
 	private class LoadDataTask extends AsyncTask<String, Void, String> {
+		String username;
 
 		protected String doInBackground(String... args) {
 			try {
@@ -94,7 +93,7 @@ public class LoadActivity extends Activity {
 				HttpClient httpClient = new DefaultHttpClient();
 				
 				// Get CSRF token
-				HttpGet httpGet = new HttpGet("http://128.61.107.111:56788/users/provide_csrf/");
+				HttpGet httpGet = new HttpGet("http://108.234.92.163:56788/users/provide_csrf/");
 				HttpResponse getResponse = httpClient.execute(httpGet);
 				Header[] headers = getResponse.getHeaders("Set-Cookie");
 				String CSRFTOKEN = "";
@@ -116,14 +115,14 @@ public class LoadActivity extends Activity {
 				// Set up cookie for sessionid
 				BasicClientCookie cookie = new BasicClientCookie("sessionid", sessionid);
 				cookie.setVersion(0);
-				cookie.setDomain("128.61.107.111");
+				cookie.setDomain("108.234.92.163");
 				cookie.setPath("/");
 				cookieStore.addCookie(cookie);
 				
 				// Set up cookie for csrftoken
 				cookie = new BasicClientCookie("csrftoken", CSRFTOKEN);
 				cookie.setVersion(0);
-				cookie.setDomain("128.61.107.111");
+				cookie.setDomain("108.234.92.163");
 				cookie.setPath("/");
 				cookieStore.addCookie(cookie);
 				
@@ -133,14 +132,18 @@ public class LoadActivity extends Activity {
 			    localContext.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
 				
 				// Verify if user has a valid session id
-				HttpPost httpPost = new HttpPost("http://128.61.107.111:56788/users/verify/");
+				HttpPost httpPost = new HttpPost("http://108.234.92.163:56788/users/verify/");
 				
 				// Set CSRF Header
 				httpPost.setHeader("X-CSRFToken", CSRFTOKEN);
 				
 				// Execute HTTP Post Request
 				HttpResponse response = httpClient.execute(httpPost, localContext); 
+				
 				int status = response.getStatusLine().getStatusCode();
+				
+				JSONObject json = new JSONObject(convertStreamToString(response.getEntity().getContent()));
+				username = json.getString("username");
 				if (status == 200) {
 					return "SUCCESS";
 				} else if (status == 500) {
@@ -171,11 +174,43 @@ public class LoadActivity extends Activity {
 		private void sendOnwards(final String status) {
 			if (status.equals("SUCCESS")) {
 				// Has connection and credentials
+				// Save sessionid in preferences
+				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+				Editor edit = prefs.edit();
+				edit.putString("username", username);
+				edit.apply();
 				goHome();
 			} else if (status.equals("FORBIDDEN")) {
 				// Needs to login
-				goLogin();
+				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+				Editor edit = prefs.edit();
+				edit.putString("username", null);
+				edit.apply();
+				goHome();
 			}
 		}
+	}
+	
+	/*
+	 *  Converts Stream to String
+	 */
+	public static String convertStreamToString(InputStream is) {
+		BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+		StringBuilder sb = new StringBuilder();
+		String line = null;
+		try {
+			while ((line = reader.readLine()) != null) {
+				sb.append(line + "\n");
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				is.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return sb.toString();
 	}
 }

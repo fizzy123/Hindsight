@@ -21,7 +21,7 @@
     	android:padding="0dip" >
     
     <TextView
-        android:id="@+id/distance"
+        android:id="@+id/created"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
@@ -32,18 +32,5 @@
         android:singleLine="true"
         android:textSize="72sp" />
     
-  	<TextView
-  	    android:id="@+id/km"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@+id/distance"
-        android:layout_alignParentBottom="true"
-        android:paddingBottom="4dp"
-        android:paddingRight="4dp"
-        android:textColor="@color/white"
-        android:ellipsize="marquee"
-        android:singleLine="true"
-        android:text="@+string/km"
-        android:textSize="36sp" />
 	</RelativeLayout>
 </RelativeLayout> 

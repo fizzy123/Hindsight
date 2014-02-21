@@ -3,11 +3,12 @@
           android:icon="@drawable/ic_camera"
           android:title="@string/camera"
           android:showAsAction="ifRoom" />
-
+	
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/menu"
         android:orderInCategory="100"
-        android:showAsAction="never"
+        android:showAsAction="ifRoom"
+    	android:icon="@drawable/ic_overflow_holo_dark"
         android:title="@string/action_settings"/>
 
 </menu>

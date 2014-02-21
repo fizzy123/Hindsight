@@ -53,15 +53,21 @@ public class UploadActivity extends Activity {
 	Uri fileUri = null;
 	ImageView photoImage = null;
 	private EditText mCaptionView;
+	SharedPreferences prefs;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_upload);
 		
+		// Get saved preferences for current user
+		prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		
 		TextView ownerView = (TextView) findViewById(R.id.owner);
 		mCaptionView = (EditText) findViewById(R.id.caption);
 		Button uploadButton = (Button) findViewById(R.id.button_upload);
+		
+		ownerView.setText(prefs.getString("username", null));
 		
 		//set font
 		Typeface font=Typeface.createFromAsset(getAssets(),"font/BEBASNEUE.OTF");
@@ -152,14 +158,13 @@ public class UploadActivity extends Activity {
 	private class UploadMemoryTask extends AsyncTask<Void, Void, String> {
 	    	
 		protected String doInBackground(Void... args) {
-			Intent intent = getIntent();
 			
 			try {
 				// Create a new HttpClient
 				HttpClient httpClient = new DefaultHttpClient();
 				
 				// Get CSRF token
-				HttpGet httpGet = new HttpGet("http://128.61.107.111:56788/users/provide_csrf/");
+				HttpGet httpGet = new HttpGet("http://108.234.92.163:56788/users/provide_csrf/");
 				HttpResponse getResponse = httpClient.execute(httpGet);
 				Header[] headers = getResponse.getHeaders("Set-Cookie");
 				String CSRFTOKEN = "";
@@ -182,14 +187,14 @@ public class UploadActivity extends Activity {
 				// Set up cookie for sessionid
 				BasicClientCookie cookie = new BasicClientCookie("sessionid", sessionid);
 				cookie.setVersion(0);
-				cookie.setDomain("128.61.107.111");
+				cookie.setDomain("108.234.92.163");
 				cookie.setPath("/");
 				cookieStore.addCookie(cookie);
 				
 				// Set up cookie for csrftoken
 				cookie = new BasicClientCookie("csrftoken", CSRFTOKEN);
 				cookie.setVersion(0);
-				cookie.setDomain("128.61.107.111");
+				cookie.setDomain("108.234.92.163");
 				cookie.setPath("/");
 				cookieStore.addCookie(cookie);
 				
@@ -199,7 +204,7 @@ public class UploadActivity extends Activity {
 			    localContext.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
 				
 			    // Set up Post Request
-			    HttpPost httpPost = new HttpPost("http://128.61.107.111:56788/memories/add/");
+			    HttpPost httpPost = new HttpPost("http://108.234.92.163:56788/memories/add/");
 			    
 			    // Adds CSRF Token
 				httpPost.setHeader("X-CSRFToken", CSRFTOKEN);
@@ -209,10 +214,10 @@ public class UploadActivity extends Activity {
 			    MultipartEntityBuilder mpEntityBuilder = MultipartEntityBuilder.create();  
 			    ContentBody cbFile = new FileBody(file);
 			    mpEntityBuilder.addPart("memory", cbFile); 
-			    mpEntityBuilder.addTextBody("longitude", intent.getStringExtra(ItemListActivity.LONGITUDE));
-			    mpEntityBuilder.addTextBody("latitude", intent.getStringExtra(ItemListActivity.LATITUDE));
+			    mpEntityBuilder.addTextBody("longitude", prefs.getString("longitude", null));
+			    mpEntityBuilder.addTextBody("latitude", prefs.getString("latitude", null));
 			    String caption = mCaptionView.getText().toString();
-			    if (TextUtils.isEmpty(caption)) {
+			    if (!TextUtils.isEmpty(caption)) {
 				    mpEntityBuilder.addTextBody("caption", caption);
 			    }
 			    

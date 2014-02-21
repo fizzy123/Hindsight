@@ -20,7 +20,7 @@
             android:background="@color/white">
             
             <TextView
-        		android:id="@+id/distance"
+        		android:id="@+id/created"
         		android:layout_width="wrap_content"
         		android:layout_height="wrap_content"
         		android:layout_alignParentLeft="true"
@@ -28,18 +28,6 @@
         		android:textColor="@color/light_gray"
         		android:layout_centerVertical = "True"
         		android:textSize="36sp" />
-            
-            <TextView
-        		android:id="@+id/km"
-        		android:layout_width="wrap_content"
-        		android:layout_height="wrap_content"
-        		android:layout_toRightOf="@+id/distance"
-        		android:textColor="@color/light_gray"
-        		android:layout_centerVertical = "True"
-        		android:layout_alignBottom="@+id/distance"
-        		android:text="@+string/km"
-        		android:paddingBottom="2dp"
-        		android:textSize="18sp" />
             
             <TextView
         		android:id="@+id/owner"

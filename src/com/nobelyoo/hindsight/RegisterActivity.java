@@ -21,6 +21,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -28,6 +29,7 @@ import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,21 +41,18 @@ import android.widget.Toast;
 public class RegisterActivity extends Activity {
 
 	/**
-	 * The default email to populate the email field with.
-	 */
-	public static final String EXTRA_EMAIL = "com.example.android.authenticatordemo.extra.EMAIL";
-
-	/**
 	 * Keep track of the login task to ensure we can cancel it if requested.
 	 */
 	private UserRegistrationTask mRegistrationTask = null;
 
 	// Values for email and password at the time of the login attempt.
+	private String mUsername;
 	private String mEmail;
 	private String mPassword;
 	private String mPasswordConfirm;
 
 	// UI references.
+	private EditText mUsernameView;
 	private EditText mEmailView;
 	private EditText mPasswordView;
 	private EditText mPasswordConfirmView;
@@ -68,9 +67,9 @@ public class RegisterActivity extends Activity {
 		setContentView(R.layout.activity_register);
 
 		// Set up the login form.
-		mEmail = getIntent().getStringExtra(EXTRA_EMAIL);
+		mUsernameView = (EditText) findViewById(R.id.username);
+		
 		mEmailView = (EditText) findViewById(R.id.email);
-		mEmailView.setText(mEmail);
 
 		mPasswordView = (EditText) findViewById(R.id.password);
 		mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -99,8 +98,15 @@ public class RegisterActivity extends Activity {
 		mLoginFormView = findViewById(R.id.login_form);
 		mLoginStatusView = findViewById(R.id.login_status);
 		mLoginStatusMessageView = (TextView) findViewById(R.id.login_status_message);
+		
+		Button mRegisterButton = (Button) findViewById(R.id.register_button);
+		//set font
+		Typeface font=Typeface.createFromAsset(getAssets(),"font/BEBASNEUE.OTF");
+		mUsernameView.setTypeface(font);
+		mPasswordView.setTypeface(font);
+		mRegisterButton.setTypeface(font);
 
-		findViewById(R.id.sign_in_button).setOnClickListener(new View.OnClickListener() {
+		findViewById(R.id.register_button).setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				attemptRegister();
@@ -124,6 +130,7 @@ public class RegisterActivity extends Activity {
 		mPasswordConfirmView.setError(null);
 
 		// Store values at the time of the login attempt.
+		mUsername = mUsernameView.getText().toString();
 		mEmail = mEmailView.getText().toString();
 		mPassword = mPasswordView.getText().toString();
 		mPasswordConfirm = mPasswordConfirmView.getText().toString();
@@ -231,7 +238,7 @@ public class RegisterActivity extends Activity {
 				HttpClient httpClient = new DefaultHttpClient();
 				
 				// Get CSRF token
-				HttpGet httpGet = new HttpGet("http://128.61.107.111:56788/users/provide_csrf/");
+				HttpGet httpGet = new HttpGet("http://108.234.92.163:56788/users/provide_csrf/");
 				HttpResponse getResponse = httpClient.execute(httpGet);
 				Header[] headers = getResponse.getHeaders("Set-Cookie");
 				String CSRFTOKEN = "";
@@ -244,11 +251,12 @@ public class RegisterActivity extends Activity {
 				}
 				
 				// Build POST request
-				HttpPost httpPost = new HttpPost("http://128.61.107.111:56788/users/create/");
+				HttpPost httpPost = new HttpPost("http://108.234.92.163:56788/users/create/");
 				httpPost.setHeader("X-CSRFToken", CSRFTOKEN); //Attach CSRF token to POST request
 				
 				// Request parameters and other properties.
 				List<NameValuePair> context = new ArrayList<NameValuePair>(2);
+				context.add(new BasicNameValuePair("username", mUsername));
 				context.add(new BasicNameValuePair("email", mEmail));
 				context.add(new BasicNameValuePair("password", mPassword));
 				httpPost.setEntity(new UrlEncodedFormEntity(context, "UTF-8"));
@@ -258,6 +266,8 @@ public class RegisterActivity extends Activity {
 				int status = response.getStatusLine().getStatusCode();
 				if (status == 200) {
 					return "SUCCESS";
+				} else if (status == 403) {
+					return response.getEntity().getContent().toString();
 				} else if (status == 500) {
 					return "SERVER_ERROR";
 				}
@@ -274,6 +284,10 @@ public class RegisterActivity extends Activity {
 			// If server returns successful, go to home screen.
 			if (status.equals("SUCCESS")) {
 				goHome();
+			} else if (status.equals("EMAIL_TAKEN")) {
+				Toast.makeText(getApplicationContext(), "That email address has already been taken", Toast.LENGTH_LONG).show();
+			} else if (status.equals("USERNAME_TAKEN")) {
+				Toast.makeText(getApplicationContext(), "That username has already been taken", Toast.LENGTH_LONG).show();
 			} else if (status.equals("SERVER_ERROR")) {
 				Toast.makeText(getApplicationContext(), "There was a server error", Toast.LENGTH_LONG).show();
 			}

@@ -5,6 +5,7 @@
     <string name="title_activity_register">Register</string>
 
     <!-- Strings related to login and registering -->
+    <string name="prompt_username">Username</string>
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
     <string name="prompt_password_confirm">Password Confirm</string>

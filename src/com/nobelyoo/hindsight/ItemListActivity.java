@@ -1,15 +1,29 @@
 package com.nobelyoo.hindsight;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
 
+import org.apache.http.Header;
+import org.apache.http.HeaderElement;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.ContentBody;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,6 +43,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -40,6 +56,9 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.PopupMenu;
+import android.widget.PopupMenu.OnMenuItemClickListener;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -57,18 +76,18 @@ import com.technotalkative.loadwebimage.ImageLoader;
  * <p>
  * This activity also implements the required {@link ItemListFragment.Callbacks} interface to listen for item selections.
  */
-public class ItemListActivity extends Activity {
+public class ItemListActivity extends BaseActivity {
 	public final static String IMAGE = "com.nobelyoo.hindsight.IMAGE";
 	public final static String CAPTION = "com.nobelyoo.hindsight.CAPTION";
 	public final static String OWNER = "com.nobelyoo.hindsight.OWNER";
-	public final static String DISTANCE = "com.nobelyoo.hindsight.DISTANCE";
-	public final static String LONGITUDE = "com.nobelyoo.hindsight.LONGITUDE";
-	public final static String LATITUDE = "com.nobelyoo.hindsight.LATITUDE";
+	public final static String CREATED = "com.nobelyoo.hindsight.CREATED";
     private JSONArray result = null;
 
 	private ItemListActivity activity;
 	private ListView listView;
+	private ProgressBar loadingView;
 	private JSONAdapter adapter;
+	private LoadMemoriesTask loadMemoriesTask;
 	public static ImageLoader imageLoader;
 	
 	@Override
@@ -76,6 +95,7 @@ public class ItemListActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_item_list);
 		activity = this;
+		loadingView = (ProgressBar) findViewById(R.id.loading);
 		
 		// Instantiate List view stuff
 		listView = (ListView) findViewById(R.id.item_list);
@@ -98,9 +118,12 @@ public class ItemListActivity extends Activity {
 				}
 			}
 		}
+		loadMemoriesTask = new LoadMemoriesTask();
+		loadMemoriesTask.execute();
 		
 		// Start task that regularly checks location to see if it should update
-		locationHandler.postDelayed(locationRunnable, 0);
+		locationHandler.postDelayed(networkLocationRunnable, 0);
+		locationHandler.postDelayed(gpsLocationRunnable, 0);
 		
 		// Set listener for whenever an item is clicked
 	    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -112,20 +135,34 @@ public class ItemListActivity extends Activity {
 					intent.putExtra(IMAGE, result.getJSONObject(position).getString("image"));
 		        	intent.putExtra(CAPTION, result.getJSONObject(position).getString("caption"));
 		        	intent.putExtra(OWNER, result.getJSONObject(position).getString("owner"));
-		        	intent.putExtra(DISTANCE, result.getJSONObject(position).getString("distance"));
+		        	intent.putExtra(CREATED, result.getJSONObject(position).getString("created"));
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
 	        	startActivity(intent);
 	        }
 	    });
+	    
+	    listView.setVisibility(View.GONE);
+		loadingView.setVisibility(View.VISIBLE);
 	}
 
 	@Override
 	protected void onStop() {
 		super.onStop();
 		// Remove location checking tasks
-		locationHandler.removeCallbacks(locationRunnable);
+		locationHandler.removeCallbacks(networkLocationRunnable);
+		locationHandler.removeCallbacks(gpsLocationRunnable);
+
+		locationManager.removeUpdates(networkLocationListener);
+		locationManager.removeUpdates(gpsLocationListener);
+	}
+	
+	@Override
+	protected void onStart() {
+		super.onStart();
+		locationHandler.postDelayed(networkLocationRunnable, 0);
+		locationHandler.postDelayed(gpsLocationRunnable, 0);
 	}
 	
 	@Override
@@ -155,20 +192,68 @@ public class ItemListActivity extends Activity {
 	private LocationManager locationManager;
 
 	// Define a listener that responds to location updates
-	private LocationListener locationListener = new LocationListener() {
+	private LocationListener networkLocationListener = new LocationListener() {
 		public void onLocationChanged(Location location) {
 			if (isBetterLocation(location, currentLocation)) {
 				currentLocation = location;
+				// Save sessionid in preferences
+				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+				Editor edit = prefs.edit();
+				edit.putString("latitude", String.valueOf(currentLocation.getLatitude()));
+				edit.putString("longitude",String.valueOf(currentLocation.getLongitude()));
+				edit.apply();
+				if (loadMemoriesTask.getStatus() == AsyncTask.Status.FINISHED) {
+					loadMemoriesTask = new LoadMemoriesTask();
+					loadMemoriesTask.execute();
+				}
+				locationManager.removeUpdates(networkLocationListener);
+				locationHandler.postDelayed(networkLocationRunnable, 10000);
 			}
 		}
 
-		public void onStatusChanged(String provider, int status, Bundle extras) {
+		@Override
+		public void onProviderDisabled(String provider) {
 		}
 
+		@Override
 		public void onProviderEnabled(String provider) {
 		}
 
+		@Override
+		public void onStatusChanged(String provider, int status, Bundle extras) {
+		}
+	};
+	
+	// Define a listener that responds to location updates
+	private LocationListener gpsLocationListener = new LocationListener() {
+		public void onLocationChanged(Location location) {
+			if (isBetterLocation(location, currentLocation)) {
+				currentLocation = location;
+				// Save sessionid in preferences
+				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+				Editor edit = prefs.edit();
+				edit.putString("latitude", String.valueOf(currentLocation.getLatitude()));
+				edit.putString("longitude",String.valueOf(currentLocation.getLongitude()));
+				edit.apply();
+				if (loadMemoriesTask.getStatus() == AsyncTask.Status.FINISHED) {
+					loadMemoriesTask = new LoadMemoriesTask();
+					loadMemoriesTask.execute();
+				}
+				locationManager.removeUpdates(gpsLocationListener);
+				locationHandler.postDelayed(gpsLocationRunnable, 30000);
+			}
+		}
+
+		@Override
 		public void onProviderDisabled(String provider) {
+		}
+
+		@Override
+		public void onProviderEnabled(String provider) {
+		}
+
+		@Override
+		public void onStatusChanged(String provider, int status, Bundle extras) {
 		}
 	};
 
@@ -238,30 +323,23 @@ public class ItemListActivity extends Activity {
 	 */
 	private Handler locationHandler = new Handler();
 
-	// Stops listening for location updates, executes LoadMemoriesTask and schedules locationRunnable
-	private Runnable updateViewRunnable = new Runnable() {
-		@Override
-		public void run() {
-			locationManager.removeUpdates(locationListener);
-			runOnUiThread(new Runnable() {
-				public void run() {
-					new LoadMemoriesTask().execute();
-				}
-			});
-			locationHandler.postDelayed(locationRunnable, 30000);
-		}
-	};
-
 	// Starts listening for location updates and schedules updateViewRunnable to run in 2 min
-	private Runnable locationRunnable = new Runnable() {
+	private Runnable networkLocationRunnable = new Runnable() {
 		@Override
 		public void run() {
 			// Register the listener with the Location Manager to receive location updates
-			locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
-			locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
-			locationHandler.postDelayed(updateViewRunnable, 12000);
+			locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, networkLocationListener);
 		}
 	};
+	
+	// Starts listening for location updates and schedules updateViewRunnable to run in 2 min
+		private Runnable gpsLocationRunnable = new Runnable() {
+			@Override
+			public void run() {
+				// Register the listener with the Location Manager to receive location updates
+				locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, gpsLocationListener);
+			}
+		};
 
 	/**
 	 * Loads data in separate thread
@@ -272,7 +350,7 @@ public class ItemListActivity extends Activity {
 			try {
 				// Create a new HttpClient and build GET request
 				HttpClient httpClient = new DefaultHttpClient();
-				HttpGet httpGet = new HttpGet("http://128.61.107.111:56788/memories/view_near/" + "?latitude=" + Double.toString(currentLocation.getLatitude()) + "&longitude=" + Double.toString(currentLocation.getLongitude()));
+				HttpGet httpGet = new HttpGet("http://108.234.92.163:56788/memories/view_near/" + "?latitude=" + Double.toString(currentLocation.getLatitude()) + "&longitude=" + Double.toString(currentLocation.getLongitude()));
 
 				// Get saved preferences for current user
 				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -305,6 +383,8 @@ public class ItemListActivity extends Activity {
 			if (status.equals("SUCCESS")) {
 				// test = adapter.getCount();
 				// I think this is a bad way of doing it, but I don't know how to get notifyDataSetChanged to work
+				loadingView.setVisibility(View.GONE);
+				listView.setVisibility(View.VISIBLE);
 				listView.setAdapter(new JSONAdapter(activity));
 			} else if(status.equals("SERVER_ERROR")){
 				Toast.makeText(getBaseContext(), "There has been an internal server error", Toast.LENGTH_LONG).show();
@@ -312,28 +392,7 @@ public class ItemListActivity extends Activity {
 		}
 	}
 
-	/*
-	 *  Converts Stream to String
-	 */
-	private static String convertStreamToString(InputStream is) {
-		BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-		StringBuilder sb = new StringBuilder();
-		String line = null;
-		try {
-			while ((line = reader.readLine()) != null) {
-				sb.append(line + "\n");
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				is.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		return sb.toString();
-	}
+	
 
 	private class JSONAdapter extends BaseAdapter implements ListAdapter {
 
@@ -370,46 +429,21 @@ public class ItemListActivity extends Activity {
 			LayoutInflater inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			View rowView = inflater.inflate(R.layout.list_item, parent, false);
 			ImageView imageView = (ImageView) rowView.findViewById(R.id.image);
-			TextView textView = (TextView) rowView.findViewById(R.id.distance);
-			TextView kmView = (TextView) rowView.findViewById(R.id.km);
+			TextView textView = (TextView) rowView.findViewById(R.id.created);
 			
 			//set font
 			Typeface font=Typeface.createFromAsset(getAssets(),"font/BEBASNEUE.OTF");
 			textView.setTypeface(font);
-			kmView.setTypeface(font);
 			
 			//  Set Text values in the view from json result
 			try {
-				String url = "http://128.61.107.111:56788/media/" + result.getJSONObject(position).getString("image");
+				String url = "http://108.234.92.163:56788/media/" + result.getJSONObject(position).getString("image");
 				imageLoader.DisplayImage(url, imageView);
-				textView.setText(result.getJSONObject(position).getString("distance"));
+				textView.setText(result.getJSONObject(position).getString("created"));
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 			return rowView;
 		}
-	}
-	
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-	    // Inflate the menu items for use in the action bar
-	    MenuInflater inflater = getMenuInflater();
-	    inflater.inflate(R.menu.main, menu);
-	    return super.onCreateOptionsMenu(menu);
-	}
-	
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-	    // Handle presses on the action bar items
-	    switch (item.getItemId()) {
-	        case R.id.camera:
-	        	Intent intent = new Intent(ItemListActivity.this, UploadActivity.class);
-	    		intent.putExtra(LATITUDE, String.valueOf(currentLocation.getLatitude()));
-	        	intent.putExtra(LONGITUDE, String.valueOf(currentLocation.getLongitude()));
-	    		startActivity(intent);
-	            return true;
-	        default:
-	            return super.onOptionsItemSelected(item);
-	    }
 	}
 }

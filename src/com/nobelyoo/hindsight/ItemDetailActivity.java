@@ -43,24 +43,23 @@ public class ItemDetailActivity extends FragmentActivity {
 		setContentView(R.layout.activity_item_detail);
 		// Start new thread
 		
-		TextView distanceView = (TextView) findViewById(R.id.distance);
-		TextView kmView = (TextView) findViewById(R.id.km);
+		TextView createdView = (TextView) findViewById(R.id.created);
 		TextView ownerView = (TextView) findViewById(R.id.owner);
 		TextView captionView = (TextView) findViewById(R.id.caption);
 		ImageView imageView = (ImageView) findViewById(R.id.image);
 		
 		Intent intent = getIntent();
-		distanceView.setText(intent.getStringExtra(ItemListActivity.DISTANCE));
+		createdView.setText(intent.getStringExtra(ItemListActivity.CREATED));
 		ownerView.setText(intent.getStringExtra(ItemListActivity.OWNER));
 		captionView.setText(intent.getStringExtra(ItemListActivity.CAPTION));
 
-    	String url = "http://128.61.107.111:56788/media/" + intent.getStringExtra(ItemListActivity.IMAGE);
+    	String url = "http://108.234.92.163:56788/media/" + intent.getStringExtra(ItemListActivity.IMAGE);
 	    
 		ItemListActivity.imageLoader.DisplayImage(url, imageView);
+		
 		//set font
 		Typeface font=Typeface.createFromAsset(getAssets(),"font/BEBASNEUE.OTF");
-		distanceView.setTypeface(font);
-		kmView.setTypeface(font);
+		createdView.setTypeface(font);
 		ownerView.setTypeface(font);
 		
 		font=Typeface.createFromAsset(getAssets(),"font/TRADITIONELLSANS-BOLD.TTF");
