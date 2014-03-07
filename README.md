@@ -8,9 +8,8 @@ Photos from the past are brought to the forefront, as images taken from the same
 
 Gaze upon the glory of the past!
 
-Possible Changes
+Features
 ---------
-Logout button
-Account Confirmation
-Go directly to Memories?
-Memory Management page: lets you delete memories and change captions
+Login/Logout
+View memories taken at same location
+Take pictures through camera app and upload to server with location data
